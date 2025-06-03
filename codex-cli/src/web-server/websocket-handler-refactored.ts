@@ -1,9 +1,9 @@
 import type { ApprovalPolicy } from '../approvals.js';
+import type { WebSession, WebSessionManager } from './session-manager.js';
 import type { CommandConfirmation } from '../utils/agent/agent-loop.js';
 import type { ResponseItem, ResponseInputItem } from 'openai/resources/responses/responses.mjs';
 import type { Socket } from 'socket.io';
 
-import { type WebSession, WebSessionManager } from './session-manager.js';
 import { AgentLoopRefactored } from '../utils/agent/agent-loop-refactored.js';
 import { AgentEventBridge } from '../utils/agent/event-bridge.js';
 import { ReviewDecision } from '../utils/agent/review.js';
@@ -114,7 +114,9 @@ export class WebSocketHandlerRefactored {
   }
   
   private subscribeToAgentEvents(): void {
-    if (!this.eventBridge) return;
+    if (!this.eventBridge) {
+      return;
+    }
     
     // Handle new items
     this.eventBridge.onItem((item: ResponseItem) => {
@@ -149,7 +151,7 @@ export class WebSocketHandlerRefactored {
     // Handle command confirmations
     this.eventBridge.onConfirmCommand((
       command: Array<string>,
-      applyPatch: any,
+      applyPatch: unknown,
       callback: (confirmation: CommandConfirmation) => void
     ) => {
       const approvalId = uuidv4();
