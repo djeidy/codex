@@ -46,6 +46,7 @@ import { initLogger } from "./utils/logger/log";
 import { isModelSupportedForResponses } from "./utils/model-utils.js";
 import { parseToolCall } from "./utils/parsers";
 import { onExit, setInkRenderer } from "./utils/terminal";
+import { startWebServer } from "./web-server/index";
 import chalk from "chalk";
 import { spawnSync } from "child_process";
 import fs from "fs";
@@ -88,6 +89,9 @@ const cli = meow(
 
     --auto-edit                Automatically approve file edits; still prompt for commands
     --full-auto                Automatically approve edits and commands when executed in the sandbox
+    
+    --web-server               Start web server mode for browser-based UI
+    --web-port <port>          Port for web server (default: 3001)
 
     --no-project-doc           Do not automatically include the repository's 'AGENTS.md'
     --project-doc <file>       Include an additional markdown file at <file> as context
@@ -197,6 +201,15 @@ const cli = meow(
       notify: {
         type: "boolean",
         description: "Enable desktop notifications for responses",
+      },
+      webServer: {
+        type: "boolean",
+        description: "Start web server mode for browser-based UI",
+      },
+      webPort: {
+        type: "number",
+        description: "Port for web server (default: 3001)",
+        default: 3001,
       },
 
       disableResponseStorage: {
@@ -550,6 +563,28 @@ if (cli.flags.quiet) {
   });
   onExit();
   process.exit(0);
+}
+
+// Check if web server mode is requested
+if (cli.flags.webServer) {
+  const port = cli.flags.webPort || 3001;
+  // eslint-disable-next-line no-console
+  console.log(`Starting Codex Web Server on port ${port}...`);
+  // eslint-disable-next-line no-console
+  console.log(`Open http://localhost:${port} in your browser to use the web UI.`);
+  // eslint-disable-next-line no-console
+  console.log(`Press Ctrl+C to stop the server.`);
+  
+  try {
+    await startWebServer(port);
+  } catch (error) {
+    // eslint-disable-next-line no-console
+    console.error("Failed to start web server:", error);
+    process.exit(1);
+  }
+  
+  // Keep the process running
+  await new Promise(() => {});
 }
 
 // Default to the "suggest" policy.
