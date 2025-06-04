@@ -62,6 +62,7 @@ apply_patch/
 
 # coverage
 coverage/
+Rigel/
 
 # os
 .DS_Store
