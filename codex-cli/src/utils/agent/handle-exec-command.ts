@@ -7,7 +7,8 @@ import { canAutoApprove } from "../../approvals.js";
 import { formatCommandForDisplay } from "../../format-command.js";
 import { FullAutoErrorMode } from "../auto-approval-mode.js";
 import { CODEX_UNSAFE_ALLOW_NO_SANDBOX, type AppConfig } from "../config.js";
-import { exec, execApplyPatch } from "./exec.js";
+import { validateCommand } from "./command-validator.js";
+import { exec } from "./exec.js";
 import { ReviewDecision } from "./review.js";
 import { isLoggingEnabled, log } from "../logger/log.js";
 import { SandboxType } from "./sandbox/interface.js";
@@ -83,6 +84,19 @@ export async function handleExecCommand(
   abortSignal?: AbortSignal,
 ): Promise<HandleExecCommandResult> {
   const { cmd: command, workdir } = args;
+
+  // Validate command before processing
+  const commandString = Array.isArray(command) ? command.join(' ') : command;
+  const validation = validateCommand(commandString);
+  if (!validation.allowed) {
+    return {
+      outputText: "Command blocked",
+      metadata: {
+        error: "command_blocked",
+        reason: validation.reason,
+      },
+    };
+  }
 
   const key = deriveCommandKey(command);
 
@@ -250,15 +264,23 @@ async function execCommand(
   // throw. Any internal errors should be mapped to a non-zero value for the
   // exitCode field.
   const start = Date.now();
-  const execResult =
-    applyPatchCommand != null
-      ? execApplyPatch(applyPatchCommand.patch, workdir)
-      : await exec(
-          { ...execInput, additionalWritableRoots },
-          await getSandbox(runInSandbox),
-          config,
-          abortSignal,
-        );
+
+  // Apply patch commands are no longer supported in log analysis mode
+  if (applyPatchCommand != null) {
+    return {
+      stdout: "",
+      stderr: "Apply patch operations are not allowed in log analysis mode",
+      exitCode: 1,
+      durationMs: 0,
+    };
+  }
+
+  const execResult = await exec(
+    { ...execInput, additionalWritableRoots },
+    await getSandbox(runInSandbox),
+    config,
+    abortSignal,
+  );
   const duration = Date.now() - start;
   const { stdout, stderr, exitCode } = execResult;
 

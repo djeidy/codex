@@ -1,8 +1,7 @@
+// DISABLED: File manipulation capabilities have been removed for log analysis mode
 // Based on reference implementation from
 // https://cookbook.openai.com/examples/gpt4-1_prompting_guide#reference-implementation-apply_patchpy
 
-import fs from "fs";
-import path from "path";
 import {
   ADD_FILE_PREFIX,
   DELETE_FILE_PREFIX,
@@ -12,7 +11,9 @@ import {
   UPDATE_FILE_PREFIX,
   HUNK_ADD_LINE_PREFIX,
   PATCH_PREFIX,
-} from "src/parse-apply-patch";
+} from "../../parse-apply-patch.js";
+import fs from "fs";
+import path from "path";
 
 // -----------------------------------------------------------------------------
 // Types & Models
@@ -771,6 +772,8 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   });
 }
 
+// DISABLED: Apply patch tool instructions removed for log analysis mode
+/*
 export const applyPatchToolInstructions = `
 To edit files, ALWAYS use the \`shell\` tool with \`apply_patch\` CLI.  \`apply_patch\` effectively allows you to execute a diff/patch against a file, but the format of the diff specification is unique to this task, so pay careful attention to these instructions. To use the \`apply_patch\` CLI, you should call the shell tool with the following structure:
 
@@ -813,3 +816,4 @@ Note, then, that we do not use line numbers in this diff format, as the context 
 
 File references can only be relative, NEVER ABSOLUTE. After the apply_patch command is run, it will always say "Done!", regardless of whether the patch was successfully applied or not. However, you can determine if there are issue and errors by looking at any warnings or logging lines printed BEFORE the "Done!" is output.
 `;
+*/

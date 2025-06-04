@@ -1,4 +1,3 @@
-import type { ReviewDecision } from "./review.js";
 import type { ApplyPatchCommand, ApprovalPolicy } from "../../approvals.js";
 import type { AppConfig } from "../config.js";
 import type { ResponseEvent } from "../responses.js";
@@ -30,13 +29,10 @@ import {
   setCurrentModel,
   setSessionId,
 } from "../session.js";
-import { applyPatchToolInstructions } from "./apply-patch.js";
 import { handleExecCommand } from "./handle-exec-command.js";
 import { HttpsProxyAgent } from "https-proxy-agent";
-import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
 import OpenAI, { APIConnectionTimeoutError, AzureOpenAI } from "openai";
-import os from "os";
 
 // Import the CommandConfirmation type from the original
 export type { CommandConfirmation } from "./agent-loop.js";
@@ -121,7 +117,7 @@ export class AgentLoopRefactored {
     this.provider = options.provider || "openai";
     this.instructions = options.instructions;
     this.approvalPolicy = options.approvalPolicy;
-    this.config = options.config || {};
+    this.config = options.config || { model: this.model, instructions: this.instructions || "" };
     this.additionalWritableRoots = options.additionalWritableRoots;
     this.disableResponseStorage = options.disableResponseStorage || false;
     this.events = options.eventBridge || new AgentEventBridge();
@@ -132,7 +128,7 @@ export class AgentLoopRefactored {
     setCurrentModel(this.model);
     
     // Initialize OpenAI client
-    const baseUrl = getBaseUrl(this.provider, this.config);
+    const baseUrl = getBaseUrl(this.provider);
     const apiKey = this.config.apiKey;
     
     if (!apiKey) {
@@ -280,7 +276,7 @@ export class AgentLoopRefactored {
 
     // Build input
     let turnInput: Array<ResponseInputItem> = [];
-    let transcriptPrefixLen = 0;
+    let _transcriptPrefixLen = 0;
 
     const stripInternalFields = (
       item: ResponseInputItem,
@@ -293,7 +289,7 @@ export class AgentLoopRefactored {
     };
 
     if (this.disableResponseStorage) {
-      transcriptPrefixLen = this.transcript.length;
+      _transcriptPrefixLen = this.transcript.length;
       this.transcript.push(...this.filterToApiMessages(input));
       turnInput = [...this.transcript, ...abortOutputs].map(stripInternalFields);
     } else {
@@ -373,9 +369,9 @@ export class AgentLoopRefactored {
   private async createStream(
     turnInput: Array<ResponseInputItem>,
     lastResponseId: string,
-  ): Promise<unknown> {
+  ): Promise<unknown | null> {
     const MAX_RETRIES = 5;
-    
+
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
         const tools = this.model.startsWith("codex") 
@@ -416,6 +412,9 @@ export class AgentLoopRefactored {
         }
       }
     }
+
+    // If we reach here, all retries failed
+    return null;
   }
 
   private async processStream(
@@ -542,7 +541,7 @@ export class AgentLoopRefactored {
     event: any,
     thisGeneration: number,
     stageItem: (item: ResponseItem) => void,
-    transcriptPrefixLen: number,
+    _transcriptPrefixLen: number,
   ): Promise<{ newTurnInput: Array<ResponseInputItem> }> {
     if (thisGeneration === this.generation && !this.canceled) {
       for (const item of event.response.output) {
@@ -667,7 +666,7 @@ export class AgentLoopRefactored {
 
   private async processEventsWithoutStreaming(
     output: Array<any>,
-    stageItem: (item: ResponseItem) => void,
+    _stageItem: (item: ResponseItem) => void,
   ): Promise<Array<ResponseInputItem>> {
     const items: Array<ResponseInputItem> = [];
     
@@ -709,7 +708,7 @@ export class AgentLoopRefactored {
   }
 
   private buildInstructions(): string {
-    const prefix = `${applyPatchToolInstructions}\n`;
+    const prefix = `You are a specialized log analysis assistant. You can read and analyze files, but you cannot create, modify, or delete files. Focus on investigating logs, identifying patterns, and providing insights. Use shell commands for read-only operations like grep, cat, find, etc.\n`;
     return [prefix, this.instructions].filter(Boolean).join("\n");
   }
 

@@ -3,19 +3,15 @@ import type { ExecInput, ExecResult } from "./sandbox/interface.js";
 import type { SpawnOptions } from "child_process";
 import type { ParseEntry } from "shell-quote";
 
-import { process_patch } from "./apply-patch.js";
+// DISABLED: Apply patch functionality removed for log analysis mode
+// import { process_patch } from "./apply-patch.js";
 import { SandboxType } from "./sandbox/interface.js";
 import { execWithLandlock } from "./sandbox/landlock.js";
 import { execWithSeatbelt } from "./sandbox/macos-seatbelt.js";
 import { exec as rawExec } from "./sandbox/raw-exec.js";
 import { formatCommandForDisplay } from "../../format-command.js";
-import { log } from "../logger/log.js";
-import fs from "fs";
 import os from "os";
-import path from "path";
 import { parse } from "shell-quote";
-import { resolvePathAgainstWorkdir } from "src/approvals.js";
-import { PATCH_SUFFIX } from "src/parse-apply-patch.js";
 
 const DEFAULT_TIMEOUT_MS = 10_000; // 10 seconds
 
@@ -79,6 +75,8 @@ export function exec(
   }
 }
 
+// DISABLED: Apply patch functionality removed for log analysis mode
+/*
 export function execApplyPatch(
   patchText: string,
   workdir: string | undefined = undefined,
@@ -131,6 +129,7 @@ export function execApplyPatch(
     };
   }
 }
+*/
 
 export function getBaseCmd(cmd: Array<string>): string {
   const formattedCommand = formatCommandForDisplay(cmd);
