@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { io, Socket } from 'socket.io-client'
-import { ChatView } from './components/ChatView'
+import { TabbedChatView } from './components/TabbedChatView'
 import { SessionManager } from './components/SessionManager'
 import { Toaster } from './components/ui/Toaster'
 import { useCodexStore } from './store/useCodexStore'
@@ -72,7 +72,7 @@ function App() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {activeSessionId ? (
-          <ChatView socket={socket} />
+          <TabbedChatView socket={socket} />
         ) : (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">

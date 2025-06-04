@@ -203,6 +203,9 @@ where
 
     let mut fn_call_state = FunctionCallState::default();
 
+    let mut has_received_items = false;
+    let mut completion_sent = false;
+
     loop {
         let sse = match timeout(idle_timeout, stream.next()).await {
             Ok(Some(Ok(ev))) => ev,
@@ -211,29 +214,51 @@ where
                 return;
             }
             Ok(None) => {
-                // Stream closed gracefully – emit Completed with dummy id.
-                let _ = tx_event
-                    .send(Ok(ResponseEvent::Completed {
-                        response_id: String::new(),
-                    }))
-                    .await;
+                // Stream closed gracefully
+                if !completion_sent {
+                    if has_received_items {
+                        debug!("Chat stream closed after receiving items, sending completion");
+                    } else {
+                        debug!("Chat stream closed without items, sending completion");
+                    }
+                    let _ = tx_event
+                        .send(Ok(ResponseEvent::Completed {
+                            response_id: "chat_completion".to_string(),
+                        }))
+                        .await;
+                    completion_sent = true;
+                }
                 return;
             }
             Err(_) => {
-                let _ = tx_event
-                    .send(Err(CodexErr::Stream("idle timeout waiting for SSE".into())))
-                    .await;
+                if has_received_items && !completion_sent {
+                    debug!("Chat stream idle timeout after receiving items, forcing completion");
+                    let _ = tx_event
+                        .send(Ok(ResponseEvent::Completed {
+                            response_id: "chat_timeout_completion".to_string(),
+                        }))
+                        .await;
+                    completion_sent = true;
+                } else {
+                    let _ = tx_event
+                        .send(Err(CodexErr::Stream("idle timeout waiting for SSE".into())))
+                        .await;
+                }
                 return;
             }
         };
 
         // OpenAI Chat streaming sends a literal string "[DONE]" when finished.
         if sse.data.trim() == "[DONE]" {
-            let _ = tx_event
-                .send(Ok(ResponseEvent::Completed {
-                    response_id: String::new(),
-                }))
-                .await;
+            if !completion_sent {
+                debug!("Received [DONE] marker, sending completion");
+                let _ = tx_event
+                    .send(Ok(ResponseEvent::Completed {
+                        response_id: "chat_done".to_string(),
+                    }))
+                    .await;
+                completion_sent = true;
+            }
             return;
         }
 
@@ -253,6 +278,7 @@ where
                 .and_then(|d| d.get("content"))
                 .and_then(|c| c.as_str())
             {
+                has_received_items = true;
                 let item = ResponseItem::Message {
                     role: "assistant".to_string(),
                     content: vec![ContentItem::OutputText {
@@ -272,6 +298,7 @@ where
                 if let Some(tool_call) = tool_calls.first() {
                     // Mark that we have an active function call in progress.
                     fn_call_state.active = true;
+                    has_received_items = true; // Function calls count as received items
 
                     // Extract call_id if present.
                     if let Some(id) = tool_call.get("id").and_then(|v| v.as_str()) {
@@ -314,11 +341,15 @@ where
                 }
 
                 // Emit Completed regardless of reason so the agent can advance.
-                let _ = tx_event
-                    .send(Ok(ResponseEvent::Completed {
-                        response_id: String::new(),
-                    }))
-                    .await;
+                if !completion_sent {
+                    debug!("Chat stream finished with reason: {:?}, sending completion", finish_reason);
+                    let _ = tx_event
+                        .send(Ok(ResponseEvent::Completed {
+                            response_id: "chat_finished".to_string(),
+                        }))
+                        .await;
+                    completion_sent = true;
+                }
 
                 // Prepare for potential next turn (should not happen in same stream).
                 // fn_call_state = FunctionCallState::default();

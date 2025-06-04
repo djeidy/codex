@@ -3,7 +3,6 @@ import { Socket } from 'socket.io-client'
 import { MessageHistory } from './MessageHistory'
 import { ChatInput } from './ChatInput'
 import { ApprovalOverlay } from './ApprovalOverlay'
-import { ToolCall } from './ToolCall'
 import { useCodexStore } from '../store/useCodexStore'
 
 interface ChatViewProps {
@@ -39,30 +38,38 @@ export function ChatView({ socket }: ChatViewProps) {
     if (!socket) return
 
     // Handle agent events
-    socket.on('agent_event', (event: any) => {
-      console.log('Agent event:', event)
-      
+    const handleAgentEvent = (event: any) => {
+      console.log('ChatView - Agent event:', event)
+
       switch (event.type) {
         case 'user_message':
           // User message already added when sent
           break
-          
+
         case 'assistant_message':
-          console.log('Assistant message details:', event.data)
-          
+          console.log('Assistant message details:', JSON.stringify(event.data, null, 2))
+
+          // Extract content from the message
+          let content = ''
+          if (event.data.content && Array.isArray(event.data.content)) {
+            console.log('Content array:', JSON.stringify(event.data.content, null, 2))
+            const textContent = event.data.content.find((c: any) => c.type === 'output_text')
+            if (textContent && textContent.text) {
+              content = textContent.text
+              console.log('Extracted text content:', content)
+            } else {
+              console.log('No output_text content found in:', event.data.content)
+            }
+          } else {
+            console.log('No content array found, content is:', event.data.content)
+          }
+
           // Check if this is a new message or an update
           const existingMessage = messages.find(m => m.id === event.data.id)
-          
+
           if (!existingMessage) {
-            // New message - check if it has content
-            let content = ''
-            if (event.data.content && Array.isArray(event.data.content)) {
-              const textContent = event.data.content.find((c: any) => c.type === 'output_text')
-              if (textContent && textContent.text) {
-                content = textContent.text
-              }
-            }
-            
+            console.log('Creating new assistant message with content:', content)
+
             // Convert active tool calls to message tools
             const messageTools = activeToolCalls.map(tool => ({
               id: tool.id,
@@ -72,7 +79,7 @@ export function ChatView({ socket }: ChatViewProps) {
               output: tool.output,
               metadata: tool.metadata
             }))
-            
+
             const message = {
               id: event.data.id,
               role: 'assistant' as const,
@@ -81,39 +88,83 @@ export function ChatView({ socket }: ChatViewProps) {
               status: (event.data.status === 'completed' ? 'complete' : 'streaming') as 'complete' | 'streaming',
               tools: messageTools.length > 0 ? messageTools : undefined
             }
+
+            console.log('Adding message to store:', JSON.stringify(message, null, 2))
             addMessage(message)
-            
+
             // Clear active tool calls when assistant message is complete
             if (event.data.status === 'completed') {
               setActiveToolCalls([])
             }
-            
+
             if (event.data.status === 'streaming') {
               setStreamingMessageId(event.data.id)
             }
           } else {
+            console.log('Updating existing assistant message with content:', content)
+
             // Update existing message
-            if (event.data.content && Array.isArray(event.data.content)) {
-              const textContent = event.data.content.find((c: any) => c.type === 'output_text')
-              if (textContent && textContent.text) {
-                updateMessage(event.data.id, {
-                  content: textContent.text,
-                  status: event.data.status === 'completed' ? 'complete' : 'streaming'
-                })
-              }
+            if (content) {
+              updateMessage(event.data.id, {
+                content: content,
+                status: event.data.status === 'completed' ? 'complete' : 'streaming'
+              })
             }
-            
+
             if (event.data.status === 'completed') {
               setStreamingMessageId(null)
               setActiveToolCalls([])
             }
           }
           break
-          
+
+        case 'item':
+          // Handle generic item events (from refactored handler)
+          console.log('Item event:', JSON.stringify(event.data, null, 2))
+
+          if (event.data.type === 'message' && event.data.role === 'assistant') {
+            // This is an assistant message from the refactored handler
+            console.log('Processing assistant message from item event')
+
+            // Extract content from the message
+            let content = ''
+            if (event.data.content && Array.isArray(event.data.content)) {
+              const textContent = event.data.content.find((c: any) => c.type === 'output_text')
+              if (textContent && textContent.text) {
+                content = textContent.text
+              }
+            }
+
+            // Check if this is a new message or an update
+            const existingMessage = messages.find(m => m.id === event.data.id)
+
+            if (!existingMessage && content) {
+              // Only create message if we have content
+              const message = {
+                id: event.data.id,
+                role: 'assistant' as const,
+                content,
+                timestamp: new Date(),
+                status: 'complete' as const
+              }
+
+              console.log('Adding assistant message from item event:', JSON.stringify(message, null, 2))
+              addMessage(message)
+              setActiveToolCalls([])
+            } else if (existingMessage && content) {
+              // Update existing message
+              updateMessage(event.data.id, {
+                content: content,
+                status: 'complete'
+              })
+            }
+          }
+          break
+
         case 'tool_execution': {
           // Handle tool execution display
           console.log('Tool execution:', event.data)
-          
+
           // Add to active tool calls
           const newTool: ActiveToolCall = {
             id: event.data.id,
@@ -121,9 +172,9 @@ export function ChatView({ socket }: ChatViewProps) {
             arguments: event.data.arguments,
             status: event.data.status || 'running'
           }
-          
+
           setActiveToolCalls(prev => [...prev, newTool])
-          
+
           // Also add to the last assistant message if it exists
           const lastAssistantMessage = [...messages].reverse().find(m => m.role === 'assistant')
           if (lastAssistantMessage) {
@@ -135,34 +186,34 @@ export function ChatView({ socket }: ChatViewProps) {
               output: undefined,
               metadata: undefined
             }
-            
+
             const updatedTools = [...(lastAssistantMessage.tools || []), tool]
             updateMessage(lastAssistantMessage.id, { tools: updatedTools })
           }
           break
         }
-          
+
         case 'tool_result': {
           // Handle tool result display
           console.log('Tool result:', event.data)
-          
+
           // Update active tool calls
-          setActiveToolCalls(prev => 
-            prev.map(tool => 
-              tool.id === event.data.id 
+          setActiveToolCalls(prev =>
+            prev.map(tool =>
+              tool.id === event.data.id
                 ? { ...tool, output: event.data.output, metadata: event.data.metadata, status: event.data.status }
                 : tool
             )
           )
-          
+
           // Find the message with this tool and update it
-          const messageWithTool = [...messages].reverse().find(m => 
+          const messageWithTool = [...messages].reverse().find(m =>
             m.tools?.some(t => t.id === event.data.id)
           )
-          
+
           if (messageWithTool) {
-            const updatedTools = messageWithTool.tools?.map(t => 
-              t.id === event.data.id 
+            const updatedTools = messageWithTool.tools?.map(t =>
+              t.id === event.data.id
                 ? { ...t, output: event.data.output, metadata: event.data.metadata, status: event.data.status }
                 : t
             )
@@ -170,25 +221,29 @@ export function ChatView({ socket }: ChatViewProps) {
           }
           break
         }
-          
+
         case 'loading':
           setIsLoading(event.data.loading)
           break
       }
-    })
+    }
+
+    socket.on('agent_event', handleAgentEvent)
 
     // Handle approval requests
-    socket.on('approval_request', (request: any) => {
+    const handleApprovalRequest = (request: any) => {
       console.log('Approval request:', request)
       addApprovalRequest(request)
-    })
+    }
+
+    socket.on('approval_request', handleApprovalRequest)
 
     // Cleanup
     return () => {
-      socket.off('agent_event')
-      socket.off('approval_request')
+      socket.off('agent_event', handleAgentEvent)
+      socket.off('approval_request', handleApprovalRequest)
     }
-  }, [socket, streamingMessageId, messages, addMessage, updateMessage, setStreamingMessageId, addApprovalRequest])
+  }, [socket, streamingMessageId, messages, addMessage, updateMessage, setStreamingMessageId, addApprovalRequest, activeToolCalls, setActiveToolCalls])
 
   const handleSendMessage = (message: string) => {
     if (!socket || !activeSessionId) return
@@ -253,8 +308,8 @@ export function ChatView({ socket }: ChatViewProps) {
       <div className="flex-1 overflow-y-auto px-6 py-4">
         <MessageHistory messages={messages} />
         
-        {/* Active Tool Calls */}
-        {activeToolCalls.length > 0 && (
+        {/* Thinking indicator when agent is working but no streaming message */}
+        {activeToolCalls.length > 0 && !streamingMessageId && (
           <div className="mt-6">
             <div className="flex justify-start">
               <div className="max-w-[80%]">
@@ -263,19 +318,13 @@ export function ChatView({ socket }: ChatViewProps) {
                   <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300">
                     AI
                   </div>
-                  
-                  {/* Tool Calls Container */}
+
+                  {/* Thinking indicator */}
                   <div className="flex-1">
-                    <div className="space-y-2">
-                      {activeToolCalls.map((tool) => (
-                        <ToolCall key={tool.id} tool={tool} />
-                      ))}
+                    <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 italic flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
+                      Agent is working... (Check the Agent tab for details)
                     </div>
-                    {!streamingMessageId && (
-                      <div className="mt-2 text-sm text-gray-500 dark:text-gray-400 italic">
-                        Thinking...
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>

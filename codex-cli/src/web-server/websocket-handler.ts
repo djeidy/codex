@@ -180,6 +180,8 @@ export class WebSocketHandler {
   }
   
   private handleAgentItem(item: ResponseItem): void {
+    log(`🔥 Backend - handleAgentItem called with type: ${item.type}, item: ${JSON.stringify(item, null, 2)}`);
+
     // Emit different events based on item type
     switch (item.type) {
       case 'file_search_call':
@@ -250,7 +252,7 @@ export class WebSocketHandler {
       
       default:
         // Handle any other types that might be added in the future
-        log(`Unhandled agent item type: ${(item as ResponseItem).type}`);
+        log(`❓ Unhandled agent item type: ${(item as ResponseItem).type}, full item: ${JSON.stringify(item, null, 2)}`);
         break;
     }
   }

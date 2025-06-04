@@ -223,6 +223,9 @@ where
     // The response id returned from the "complete" message.
     let mut response_id = None;
 
+    let mut has_received_items = false;
+    let mut completion_sent = false;
+
     loop {
         let sse = match timeout(idle_timeout, stream.next()).await {
             Ok(Some(Ok(sse))) => sse,
@@ -233,25 +236,50 @@ where
                 return;
             }
             Ok(None) => {
-                match response_id {
-                    Some(response_id) => {
-                        let event = ResponseEvent::Completed { response_id };
-                        let _ = tx_event.send(Ok(event)).await;
+                // Stream closed gracefully
+                if !completion_sent {
+                    match response_id {
+                        Some(response_id) => {
+                            debug!("Stream closed, sending completion event with response_id: {}", response_id);
+                            let event = ResponseEvent::Completed { response_id };
+                            let _ = tx_event.send(Ok(event)).await;
+                        }
+                        None => {
+                            if has_received_items {
+                                // We received items but no response.completed event, force completion
+                                debug!("Stream closed after receiving items but no completion event, forcing completion");
+                                let event = ResponseEvent::Completed {
+                                    response_id: "forced_completion".to_string()
+                                };
+                                let _ = tx_event.send(Ok(event)).await;
+                            } else {
+                                let _ = tx_event
+                                    .send(Err(CodexErr::Stream(
+                                        "stream closed before response.completed".into(),
+                                    )))
+                                    .await;
+                            }
+                        }
                     }
-                    None => {
-                        let _ = tx_event
-                            .send(Err(CodexErr::Stream(
-                                "stream closed before response.completed".into(),
-                            )))
-                            .await;
-                    }
+                    completion_sent = true;
                 }
                 return;
             }
             Err(_) => {
-                let _ = tx_event
-                    .send(Err(CodexErr::Stream("idle timeout waiting for SSE".into())))
-                    .await;
+                debug!("Stream idle timeout after {} ms", idle_timeout.as_millis());
+                if has_received_items && !completion_sent {
+                    // Force completion if we received items but timed out waiting for completion
+                    debug!("Idle timeout after receiving items, forcing completion");
+                    let event = ResponseEvent::Completed {
+                        response_id: response_id.unwrap_or_else(|| "timeout_completion".to_string())
+                    };
+                    let _ = tx_event.send(Ok(event)).await;
+                    completion_sent = true;
+                } else {
+                    let _ = tx_event
+                        .send(Err(CodexErr::Stream("idle timeout waiting for SSE".into())))
+                        .await;
+                }
                 return;
             }
         };
@@ -291,6 +319,7 @@ where
                     continue;
                 };
 
+                has_received_items = true;
                 let event = ResponseEvent::OutputItemDone(item);
                 if tx_event.send(Ok(event)).await.is_err() {
                     return;
@@ -301,7 +330,16 @@ where
                 if let Some(resp_val) = event.response {
                     match serde_json::from_value::<ResponseCompleted>(resp_val) {
                         Ok(r) => {
-                            response_id = Some(r.id);
+                            response_id = Some(r.id.clone());
+                            debug!("Received response.completed with id: {}", r.id);
+
+                            // Send completion event immediately
+                            let completion_event = ResponseEvent::Completed { response_id: r.id };
+                            if tx_event.send(Ok(completion_event)).await.is_err() {
+                                return;
+                            }
+                            completion_sent = true;
+                            return; // Exit the loop after sending completion
                         }
                         Err(e) => {
                             debug!("failed to parse ResponseCompleted: {e}");

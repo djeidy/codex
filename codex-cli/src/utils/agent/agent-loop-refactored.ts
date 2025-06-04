@@ -322,17 +322,29 @@ export class AgentLoopRefactored {
     let turnInput = initialTurnInput;
     let lastResponseId = initialLastResponseId;
     let transcriptPrefixLen = 0;
+    let loopIteration = 0;
+
+    log(`Starting runLoop with ${turnInput.length} input items, generation: ${thisGeneration}`);
 
     while (turnInput.length > 0) {
+      loopIteration++;
+      log(`RunLoop iteration ${loopIteration}: Processing ${turnInput.length} items`);
+
       if (this.canceled || this.hardAbort.signal.aborted) {
+        log(`RunLoop cancelled at iteration ${loopIteration}`);
         return;
       }
 
+      const streamStartTime = Date.now();
       const stream = await this.createStream(turnInput, lastResponseId);
-      
+
       if (!stream) {
+        log(`No stream created at iteration ${loopIteration}`);
         return;
       }
+
+      log(`Stream created in ${Date.now() - streamStartTime}ms, processing...`);
+      const processStartTime = Date.now();
 
       const result = await this.processStream(
         stream,
@@ -341,14 +353,21 @@ export class AgentLoopRefactored {
         transcriptPrefixLen,
       );
 
+      const processTime = Date.now() - processStartTime;
+      log(`Stream processed in ${processTime}ms, result: ${result ? 'success' : 'null'}`);
+
       if (result) {
         turnInput = result.newTurnInput;
         lastResponseId = result.lastResponseId;
         this.events.emitResponseId(lastResponseId);
+        log(`Iteration ${loopIteration} complete: ${turnInput.length} new items, responseId: ${lastResponseId}`);
       } else {
+        log(`Breaking loop at iteration ${loopIteration} due to null result`);
         break;
       }
     }
+
+    log(`RunLoop completed after ${loopIteration} iterations`);
   }
 
   private async createStream(
@@ -408,6 +427,8 @@ export class AgentLoopRefactored {
     const staged: Array<ResponseItem | undefined> = [];
     let lastResponseId = "";
     let newTurnInput: Array<ResponseInputItem> = [];
+    let hasReceivedItems = false;
+    let completionReceived = false;
 
     const stageItem = (item: ResponseItem) => {
       if (thisGeneration !== this.generation) {
@@ -437,29 +458,60 @@ export class AgentLoopRefactored {
       }, 3);
     };
 
+    // Add timeout for stream processing to prevent hanging
+    const streamTimeout = setTimeout(() => {
+      if (!completionReceived && hasReceivedItems) {
+        log(`Stream timeout: No completion event received after receiving items`);
+        // Force completion if we've received items but no completion event
+        this.forceStreamCompletion(lastResponseId, newTurnInput);
+      }
+    }, 30000); // 30 second timeout for completion after receiving items
+
     try {
       for await (const event of stream as AsyncIterable<ResponseEvent>) {
         log(`AgentLoop.run(): response event ${event.type}`);
 
+        // Check for cancellation
+        if (this.canceled || this.hardAbort.signal.aborted) {
+          log(`Stream processing cancelled during event: ${event.type}`);
+          clearTimeout(streamTimeout);
+          return null;
+        }
+
         if (event.type === "response.output_item.done") {
+          hasReceivedItems = true;
           await this.handleOutputItem(event.item, stageItem, thinkingStart);
         }
 
         if (event.type === "response.completed") {
+          completionReceived = true;
+          clearTimeout(streamTimeout);
           const result = await this.handleResponseCompleted(
             event,
             thisGeneration,
             stageItem,
             transcriptPrefixLen,
           );
-          
+
           lastResponseId = event.response.id;
           newTurnInput = result.newTurnInput;
+          break; // Exit the loop after completion
         }
+      }
+
+      clearTimeout(streamTimeout);
+
+      // If we received items but no completion event, force completion
+      if (hasReceivedItems && !completionReceived) {
+        log(`Warning: Stream ended without completion event, forcing completion`);
+        this.forceStreamCompletion(lastResponseId, newTurnInput);
       }
 
       return { newTurnInput, lastResponseId };
     } catch (error) {
+      clearTimeout(streamTimeout);
+      log(`Stream processing error: ${error instanceof Error ? error.message : String(error)}`);
+
       if (await this.handleStreamProcessingError(error)) {
         return this.processStream(stream, thisGeneration, thinkingStart, transcriptPrefixLen);
       }
@@ -768,5 +820,23 @@ export class AgentLoopRefactored {
     }
 
     return false;
+  }
+
+  /**
+   * Force completion when stream hangs without proper completion event
+   */
+  private forceStreamCompletion(lastResponseId: string, newTurnInput: Array<ResponseInputItem>): void {
+    log(`Forcing stream completion - responseId: ${lastResponseId}, turnInput length: ${newTurnInput.length}`);
+
+    // Emit completion event to unblock the UI
+    this.events.emitComplete();
+
+    // Emit loading false to stop loading indicators
+    this.events.emitLoading(false);
+
+    // If we have a response ID, emit it
+    if (lastResponseId) {
+      this.events.emitResponseId(lastResponseId);
+    }
   }
 }

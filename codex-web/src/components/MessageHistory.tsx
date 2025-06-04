@@ -12,7 +12,10 @@ interface MessageHistoryProps {
 }
 
 export function MessageHistory({ messages }: MessageHistoryProps) {
+  console.log('MessageHistory: Rendering with messages:', messages.length, JSON.stringify(messages, null, 2))
+
   if (messages.length === 0) {
+    console.log('MessageHistory: No messages to display')
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center text-gray-500 dark:text-gray-400">
@@ -23,11 +26,13 @@ export function MessageHistory({ messages }: MessageHistoryProps) {
     )
   }
 
+  console.log('MessageHistory: Rendering', messages.length, 'messages')
   return (
     <div className="space-y-6">
-      {messages.map((message) => (
-        <Message key={message.id} message={message} />
-      ))}
+      {messages.map((message) => {
+        console.log('MessageHistory: Rendering message:', message.id, message.role, message.content?.substring(0, 50))
+        return <Message key={message.id} message={message} />
+      })}
     </div>
   )
 }
