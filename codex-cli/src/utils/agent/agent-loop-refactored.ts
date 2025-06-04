@@ -1,6 +1,7 @@
 import type { ApplyPatchCommand, ApprovalPolicy } from "../../approvals.js";
 import type { AppConfig } from "../config.js";
 import type { ResponseEvent } from "../responses.js";
+import type { CommandConfirmation } from "./agent-loop.js";
 import type {
   ResponseFunctionToolCall,
   ResponseInputItem,
@@ -10,6 +11,21 @@ import type {
   Tool,
 } from "openai/resources/responses/responses.mjs";
 import type { Reasoning } from "openai/resources.mjs";
+
+// Type for function call items that may include local shell calls
+interface FunctionCallItem {
+  type: "function_call" | "local_shell_call";
+  call_id?: string;
+  id?: string;
+  function?: {
+    name?: string;
+    arguments?: string;
+  };
+  name?: string;
+  arguments?: string;
+  status?: string;
+  action?: unknown;
+}
 
 import { AgentEventBridge } from "./event-bridge.js";
 import { CLI_VERSION } from "../../version.js";
@@ -34,7 +50,7 @@ import { HttpsProxyAgent } from "https-proxy-agent";
 import { randomUUID } from "node:crypto";
 import OpenAI, { APIConnectionTimeoutError, AzureOpenAI } from "openai";
 
-// Import the CommandConfirmation type from the original
+// Export the CommandConfirmation type from the original
 export type { CommandConfirmation } from "./agent-loop.js";
 
 // Constants from original
@@ -71,9 +87,8 @@ const shellFunctionTool: FunctionTool = {
 };
 
 const localShellTool: Tool = {
-  //@ts-expect-error - waiting on sdk
   type: "local_shell",
-};
+} as unknown as Tool;
 
 export interface AgentLoopOptions {
   model: string;
@@ -100,7 +115,7 @@ export class AgentLoopRefactored {
   private readonly disableResponseStorage: boolean;
   private oai: OpenAI;
   private events: AgentEventBridge;
-  
+
   // State management
   private currentStream: unknown | null = null;
   private generation = 0;
@@ -117,20 +132,23 @@ export class AgentLoopRefactored {
     this.provider = options.provider || "openai";
     this.instructions = options.instructions;
     this.approvalPolicy = options.approvalPolicy;
-    this.config = options.config || { model: this.model, instructions: this.instructions || "" };
+    this.config = options.config || {
+      model: this.model,
+      instructions: this.instructions || "",
+    };
     this.additionalWritableRoots = options.additionalWritableRoots;
     this.disableResponseStorage = options.disableResponseStorage || false;
     this.events = options.eventBridge || new AgentEventBridge();
-    
+
     // Initialize session
     this.sessionId = getSessionId() || randomUUID();
     setSessionId(this.sessionId);
     setCurrentModel(this.model);
-    
+
     // Initialize OpenAI client
     const baseUrl = getBaseUrl(this.provider);
     const apiKey = this.config.apiKey;
-    
+
     if (!apiKey) {
       throw new Error("OpenAI API key is required");
     }
@@ -157,7 +175,7 @@ export class AgentLoopRefactored {
         timeout: OPENAI_TIMEOUT_MS,
         defaultHeaders: {
           "User-Agent": `OpenAI-Codex-CLI/${CLI_VERSION}`,
-          Origin: ORIGIN,
+          "Origin": ORIGIN,
         },
       });
     }
@@ -192,14 +210,15 @@ export class AgentLoopRefactored {
         this.generation
       }`,
     );
-    
-    (this.currentStream as { controller?: { abort?: () => void } } | null)
-      ?.controller?.abort?.();
+
+    (
+      this.currentStream as { controller?: { abort?: () => void } } | null
+    )?.controller?.abort?.();
 
     this.canceled = true;
     this.execAbortController?.abort();
     this.execAbortController = new AbortController();
-    
+
     log("AgentLoop.cancel(): execAbortController.abort() called");
 
     if (this.pendingAborts.size === 0) {
@@ -213,7 +232,7 @@ export class AgentLoopRefactored {
     this.events.emitLoading(false);
     this.events.emitCanceled();
     this.generation += 1;
-    
+
     log(`AgentLoop.cancel(): generation bumped to ${this.generation}`);
   }
 
@@ -224,11 +243,11 @@ export class AgentLoopRefactored {
     if (this.terminated) {
       return;
     }
-    
+
     this.terminated = true;
     this.cancel();
     this.hardAbort.abort();
-    
+
     log("AgentLoop.terminate(): hardAbort signaled");
   }
 
@@ -245,23 +264,23 @@ export class AgentLoopRefactored {
 
     const thinkingStart = Date.now();
     const thisGeneration = ++this.generation;
-    
+
     this.canceled = false;
     this.currentStream = null;
     this.execAbortController = new AbortController();
-    
+
     log(
       `AgentLoop.run(): new execAbortController created for generation ${this.generation}`,
     );
 
-    let lastResponseId: string = this.disableResponseStorage
+    const lastResponseId: string = this.disableResponseStorage
       ? ""
       : previousResponseId;
 
     // Handle pending aborts
     const abortOutputs: Array<ResponseInputItem> = [];
     if (this.pendingAborts.size > 0) {
-      for (const id of this.pendingAborts) {
+      for (const id of Array.from(this.pendingAborts)) {
         abortOutputs.push({
           type: "function_call_output",
           call_id: id,
@@ -276,7 +295,6 @@ export class AgentLoopRefactored {
 
     // Build input
     let turnInput: Array<ResponseInputItem> = [];
-    let _transcriptPrefixLen = 0;
 
     const stripInternalFields = (
       item: ResponseInputItem,
@@ -289,9 +307,10 @@ export class AgentLoopRefactored {
     };
 
     if (this.disableResponseStorage) {
-      _transcriptPrefixLen = this.transcript.length;
       this.transcript.push(...this.filterToApiMessages(input));
-      turnInput = [...this.transcript, ...abortOutputs].map(stripInternalFields);
+      turnInput = [...this.transcript, ...abortOutputs].map(
+        stripInternalFields,
+      );
     } else {
       turnInput = [...abortOutputs, ...input].map(stripInternalFields);
     }
@@ -299,7 +318,12 @@ export class AgentLoopRefactored {
     this.events.emitLoading(true);
 
     try {
-      await this.runLoop(turnInput, lastResponseId, thisGeneration, thinkingStart);
+      await this.runLoop(
+        turnInput,
+        lastResponseId,
+        thisGeneration,
+        thinkingStart,
+      );
       this.events.emitComplete();
     } catch (error) {
       this.events.emitError(error as Error);
@@ -317,14 +341,18 @@ export class AgentLoopRefactored {
   ): Promise<void> {
     let turnInput = initialTurnInput;
     let lastResponseId = initialLastResponseId;
-    let transcriptPrefixLen = 0;
+    const transcriptPrefixLen = 0;
     let loopIteration = 0;
 
-    log(`Starting runLoop with ${turnInput.length} input items, generation: ${thisGeneration}`);
+    log(
+      `Starting runLoop with ${turnInput.length} input items, generation: ${thisGeneration}`,
+    );
 
     while (turnInput.length > 0) {
       loopIteration++;
-      log(`RunLoop iteration ${loopIteration}: Processing ${turnInput.length} items`);
+      log(
+        `RunLoop iteration ${loopIteration}: Processing ${turnInput.length} items`,
+      );
 
       if (this.canceled || this.hardAbort.signal.aborted) {
         log(`RunLoop cancelled at iteration ${loopIteration}`);
@@ -332,6 +360,7 @@ export class AgentLoopRefactored {
       }
 
       const streamStartTime = Date.now();
+      // eslint-disable-next-line no-await-in-loop
       const stream = await this.createStream(turnInput, lastResponseId);
 
       if (!stream) {
@@ -342,6 +371,7 @@ export class AgentLoopRefactored {
       log(`Stream created in ${Date.now() - streamStartTime}ms, processing...`);
       const processStartTime = Date.now();
 
+      // eslint-disable-next-line no-await-in-loop
       const result = await this.processStream(
         stream,
         thisGeneration,
@@ -350,13 +380,17 @@ export class AgentLoopRefactored {
       );
 
       const processTime = Date.now() - processStartTime;
-      log(`Stream processed in ${processTime}ms, result: ${result ? 'success' : 'null'}`);
+      log(
+        `Stream processed in ${processTime}ms, result: ${result ? "success" : "null"}`,
+      );
 
       if (result) {
         turnInput = result.newTurnInput;
         lastResponseId = result.lastResponseId;
         this.events.emitResponseId(lastResponseId);
-        log(`Iteration ${loopIteration} complete: ${turnInput.length} new items, responseId: ${lastResponseId}`);
+        log(
+          `Iteration ${loopIteration} complete: ${turnInput.length} new items, responseId: ${lastResponseId}`,
+        );
       } else {
         log(`Breaking loop at iteration ${loopIteration} due to null result`);
         break;
@@ -374,17 +408,20 @@ export class AgentLoopRefactored {
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       try {
-        const tools = this.model.startsWith("codex") 
-          ? [localShellTool] 
+        const tools = this.model.startsWith("codex")
+          ? [localShellTool]
           : [shellFunctionTool];
 
         const reasoning = this.getReasoningConfig();
         const mergedInstructions = this.buildInstructions();
 
         const responseCall = this.getResponseCall();
-        
-        log(`instructions (length ${mergedInstructions.length}): ${mergedInstructions}`);
 
+        log(
+          `instructions (length ${mergedInstructions.length}): ${mergedInstructions}`,
+        );
+
+        // eslint-disable-next-line no-await-in-loop
         const stream = await responseCall({
           model: this.model,
           instructions: mergedInstructions,
@@ -406,6 +443,7 @@ export class AgentLoopRefactored {
         this.currentStream = stream;
         return stream;
       } catch (error) {
+        // eslint-disable-next-line no-await-in-loop
         const handled = await this.handleStreamError(error, attempt);
         if (!handled) {
           throw error;
@@ -422,7 +460,10 @@ export class AgentLoopRefactored {
     thisGeneration: number,
     thinkingStart: number,
     transcriptPrefixLen: number,
-  ): Promise<{ newTurnInput: Array<ResponseInputItem>; lastResponseId: string } | null> {
+  ): Promise<{
+    newTurnInput: Array<ResponseInputItem>;
+    lastResponseId: string;
+  } | null> {
     const staged: Array<ResponseItem | undefined> = [];
     let lastResponseId = "";
     let newTurnInput: Array<ResponseInputItem> = [];
@@ -460,7 +501,9 @@ export class AgentLoopRefactored {
     // Add timeout for stream processing to prevent hanging
     const streamTimeout = setTimeout(() => {
       if (!completionReceived && hasReceivedItems) {
-        log(`Stream timeout: No completion event received after receiving items`);
+        log(
+          `Stream timeout: No completion event received after receiving items`,
+        );
         // Force completion if we've received items but no completion event
         this.forceStreamCompletion(lastResponseId, newTurnInput);
       }
@@ -502,33 +545,52 @@ export class AgentLoopRefactored {
 
       // If we received items but no completion event, force completion
       if (hasReceivedItems && !completionReceived) {
-        log(`Warning: Stream ended without completion event, forcing completion`);
+        log(
+          `Warning: Stream ended without completion event, forcing completion`,
+        );
         this.forceStreamCompletion(lastResponseId, newTurnInput);
       }
 
       return { newTurnInput, lastResponseId };
     } catch (error) {
       clearTimeout(streamTimeout);
-      log(`Stream processing error: ${error instanceof Error ? error.message : String(error)}`);
+      log(
+        `Stream processing error: ${error instanceof Error ? error.message : String(error)}`,
+      );
 
       if (await this.handleStreamProcessingError(error)) {
-        return this.processStream(stream, thisGeneration, thinkingStart, transcriptPrefixLen);
+        return this.processStream(
+          stream,
+          thisGeneration,
+          thinkingStart,
+          transcriptPrefixLen,
+        );
       }
       throw error;
     }
   }
 
   private async handleOutputItem(
-    item: any,
+    item: unknown,
     stageItem: (item: ResponseItem) => void,
     thinkingStart: number,
   ): Promise<void> {
-    if (item.type === "reasoning") {
-      item.duration_ms = Date.now() - thinkingStart;
+    const itemWithType = item as {
+      type?: string;
+      duration_ms?: number;
+      call_id?: string;
+      id?: string;
+    };
+
+    if (itemWithType.type === "reasoning") {
+      itemWithType.duration_ms = Date.now() - thinkingStart;
     }
 
-    if (item.type === "function_call" || item.type === "local_shell_call") {
-      const callId = item.call_id ?? item.id;
+    if (
+      itemWithType.type === "function_call" ||
+      itemWithType.type === "local_shell_call"
+    ) {
+      const callId = itemWithType.call_id ?? itemWithType.id;
       if (callId) {
         this.pendingAborts.add(callId);
       }
@@ -538,30 +600,41 @@ export class AgentLoopRefactored {
   }
 
   private async handleResponseCompleted(
-    event: any,
+    event: unknown,
     thisGeneration: number,
     stageItem: (item: ResponseItem) => void,
     _transcriptPrefixLen: number,
   ): Promise<{ newTurnInput: Array<ResponseInputItem> }> {
-    if (thisGeneration === this.generation && !this.canceled) {
-      for (const item of event.response.output) {
+    const eventWithResponse = event as {
+      response?: { output?: Array<unknown>; status?: string };
+    };
+
+    if (
+      thisGeneration === this.generation &&
+      !this.canceled &&
+      eventWithResponse.response?.output
+    ) {
+      for (const item of eventWithResponse.response.output) {
         stageItem(item as ResponseItem);
       }
     }
 
     let newTurnInput: Array<ResponseInputItem> = [];
-    
+
     if (
-      event.response.status === "completed" ||
-      (event.response.status as unknown as string) === "requires_action"
+      eventWithResponse.response?.status === "completed" ||
+      (eventWithResponse.response?.status as unknown as string) ===
+        "requires_action"
     ) {
       newTurnInput = await this.processEventsWithoutStreaming(
-        event.response.output,
+        eventWithResponse.response?.output || [],
         stageItem,
       );
 
       if (this.disableResponseStorage) {
-        const stripInternalFields = (item: ResponseInputItem): ResponseInputItem => {
+        const stripInternalFields = (
+          item: ResponseInputItem,
+        ): ResponseInputItem => {
           const clean = { ...item } as Record<string, unknown>;
           delete clean["duration_ms"];
           delete clean["id"];
@@ -570,7 +643,9 @@ export class AgentLoopRefactored {
         };
 
         const cleaned = this.filterToApiMessages(
-          event.response.output.map(stripInternalFields),
+          (eventWithResponse.response?.output || []).map((item) =>
+            stripInternalFields(item as ResponseInputItem),
+          ),
         );
         this.transcript.push(...cleaned);
 
@@ -596,27 +671,31 @@ export class AgentLoopRefactored {
       return [];
     }
 
-    const isChatStyle = (item as any).function != null;
+    const itemWithFunction = item as FunctionCallItem;
+    const isChatStyle = itemWithFunction.function != null;
     const name: string | undefined = isChatStyle
-      ? (item as any).function?.name
-      : (item as any).name;
+      ? itemWithFunction.function?.name
+      : itemWithFunction.name;
     const rawArguments: string | undefined = isChatStyle
-      ? (item as any).function?.arguments
-      : (item as any).arguments;
-    const callId: string = (item as any).call_id ?? (item as any).id;
+      ? itemWithFunction.function?.arguments
+      : itemWithFunction.arguments;
+    const callId: string =
+      itemWithFunction.call_id ?? itemWithFunction.id ?? "";
 
     const args = parseToolCallArguments(rawArguments ?? "{}");
-    
+
     log(
       `handleFunctionCall(): name=${name ?? "undefined"} callId=${callId} args=${rawArguments}`,
     );
 
     if (args == null) {
-      return [{
-        type: "function_call_output",
-        call_id: callId,
-        output: `invalid arguments: ${rawArguments}`,
-      }];
+      return [
+        {
+          type: "function_call_output",
+          call_id: callId,
+          output: `invalid arguments: ${rawArguments}`,
+        },
+      ];
     }
 
     const outputItem: ResponseInputItem.FunctionCallOutput = {
@@ -629,12 +708,12 @@ export class AgentLoopRefactored {
 
     if (name === "container.exec" || name === "shell") {
       this.events.emitToolCallStart(name, args);
-      
+
       // Create a wrapper for command confirmation that uses events
       const getCommandConfirmation = async (
         command: Array<string>,
         applyPatch: ApplyPatchCommand | undefined,
-      ): Promise<any> => {
+      ): Promise<CommandConfirmation> => {
         return new Promise((resolve) => {
           this.events.emitConfirmCommand(command, applyPatch, resolve);
         });
@@ -652,7 +731,7 @@ export class AgentLoopRefactored {
         getCommandConfirmation,
         this.execAbortController?.signal,
       );
-      
+
       outputItem.output = JSON.stringify({ output: outputText, metadata });
       this.events.emitToolCallComplete(name, { outputText, metadata });
 
@@ -665,28 +744,36 @@ export class AgentLoopRefactored {
   }
 
   private async processEventsWithoutStreaming(
-    output: Array<any>,
+    output: Array<unknown>,
     _stageItem: (item: ResponseItem) => void,
   ): Promise<Array<ResponseInputItem>> {
     const items: Array<ResponseInputItem> = [];
-    
+
+    // Process function calls sequentially to avoid resource conflicts
+    // and maintain proper event ordering for user confirmations
     for (const item of output) {
+      const itemWithType = item as { id?: string; type?: string };
       if (
-        !alreadyProcessedResponses.has(item.id) &&
-        (item.type === "function_call" || item.type === "local_shell_call")
+        itemWithType.id &&
+        !alreadyProcessedResponses.has(itemWithType.id) &&
+        (itemWithType.type === "function_call" ||
+          itemWithType.type === "local_shell_call")
       ) {
-        alreadyProcessedResponses.add(item.id);
-        const result = await this.handleFunctionCall(item);
+        alreadyProcessedResponses.add(itemWithType.id);
+        // eslint-disable-next-line no-await-in-loop
+        const result = await this.handleFunctionCall(
+          item as ResponseFunctionToolCall,
+        );
         items.push(...result);
       }
     }
-    
+
     const flushPendingItems = () => {
       if (this.pendingAborts.size > 0) {
         this.pendingAborts.clear();
       }
     };
-    
+
     flushPendingItems();
     return items;
   }
@@ -713,8 +800,12 @@ export class AgentLoopRefactored {
   }
 
   private getResponseCall() {
-    if (!this.config.provider || this.config.provider?.toLowerCase() === "openai") {
-      return (params: ResponseCreateParams) => this.oai.responses.create(params);
+    if (
+      !this.config.provider ||
+      this.config.provider?.toLowerCase() === "openai"
+    ) {
+      return (params: ResponseCreateParams) =>
+        this.oai.responses.create(params);
     }
     return (params: ResponseCreateParams) =>
       responsesCreateViaChatCompletions(
@@ -723,70 +814,112 @@ export class AgentLoopRefactored {
       );
   }
 
-  private filterToApiMessages(items: Array<any>): Array<ResponseInputItem> {
-    return items.filter(
-      (item) =>
-        item.type === "message" ||
-        item.type === "function_call_output" ||
-        item.type === "local_shell_call_output",
-    );
+  private filterToApiMessages(items: Array<unknown>): Array<ResponseInputItem> {
+    return items.filter((item): item is ResponseInputItem => {
+      const itemWithType = item as { type?: string };
+      return (
+        itemWithType.type === "message" ||
+        itemWithType.type === "function_call_output" ||
+        itemWithType.type === "local_shell_call_output"
+      );
+    });
   }
 
   private updateTranscript(item: ResponseItem): void {
-    const role = (item as any).role;
+    const itemWithRole = item as { role?: string; type?: string };
+    const role = itemWithRole.role;
     if (role !== "system") {
+      // Skip certain types that shouldn't be in transcript
+      const itemAsInput = item as ResponseInputItem;
       if (
-        (item as ResponseInputItem).type === "function_call" ||
-        (item as ResponseInputItem).type === "reasoning" ||
-        (item as ResponseInputItem).type === "local_shell_call" ||
-        ((item as ResponseInputItem).type === "message" && (item as any).role === "user")
+        itemAsInput.type === "function_call" ||
+        itemAsInput.type === "reasoning" ||
+        (itemAsInput.type === "message" && itemWithRole.role === "user")
       ) {
+        return;
+      }
+
+      // Also check for local_shell_call using type assertion
+      const itemWithType = item as { type?: string };
+      if (itemWithType.type === "local_shell_call") {
         return;
       }
 
       const clone: ResponseInputItem = {
         ...(item as unknown as ResponseInputItem),
       } as ResponseInputItem;
-      delete (clone as any).duration_ms;
+      // Remove internal fields
+      const cloneWithFields = clone as { duration_ms?: number };
+      delete cloneWithFields.duration_ms;
       this.transcript.push(clone);
     }
   }
 
-  private async handleStreamError(error: any, attempt: number): Promise<boolean> {
+  private async handleStreamError(
+    error: unknown,
+    attempt: number,
+  ): Promise<boolean> {
     const isTimeout = error instanceof APIConnectionTimeoutError;
-    const ApiConnErrCtor = (OpenAI as any).APIConnectionError;
-    const isConnectionError = ApiConnErrCtor ? error instanceof ApiConnErrCtor : false;
-    const status = error?.status ?? error?.httpStatus ?? error?.statusCode;
-    const isServerError = (typeof status === "number" && status >= 500) || error?.type === "server_error";
-    
+    const ApiConnErrCtor = (
+      OpenAI as unknown as { APIConnectionError?: unknown }
+    ).APIConnectionError;
+    const isConnectionError = ApiConnErrCtor
+      ? error instanceof
+        (ApiConnErrCtor as new (...args: Array<unknown>) => unknown)
+      : false;
+
+    const errorWithStatus = error as {
+      status?: number;
+      httpStatus?: number;
+      statusCode?: number;
+      type?: string;
+      param?: string;
+      message?: string;
+      code?: string;
+    };
+
+    const status =
+      errorWithStatus.status ??
+      errorWithStatus.httpStatus ??
+      errorWithStatus.statusCode;
+    const isServerError =
+      (typeof status === "number" && status >= 500) ||
+      errorWithStatus.type === "server_error";
+
     if ((isTimeout || isServerError || isConnectionError) && attempt < 5) {
       log(`OpenAI request failed (attempt ${attempt}/5), retrying...`);
       return true;
     }
 
     const isTooManyTokensError =
-      (error.param === "max_tokens" ||
-        (typeof error.message === "string" && /max_tokens is too large/i.test(error.message))) &&
-      error.type === "invalid_request_error";
+      (errorWithStatus.param === "max_tokens" ||
+        (typeof errorWithStatus.message === "string" &&
+          /max_tokens is too large/i.test(errorWithStatus.message))) &&
+      errorWithStatus.type === "invalid_request_error";
 
     if (isTooManyTokensError) {
       this.events.emitItem({
         id: `error-${Date.now()}`,
         type: "message",
         role: "system",
-        content: [{
-          type: "input_text",
-          text: "⚠️  The current request exceeds the maximum context length supported by the chosen model. Please shorten the conversation, run /clear, or switch to a model with a larger context window and try again.",
-        }],
+        content: [
+          {
+            type: "input_text",
+            text: "⚠️  The current request exceeds the maximum context length supported by the chosen model. Please shorten the conversation, run /clear, or switch to a model with a larger context window and try again.",
+          },
+        ],
       });
       return false;
     }
 
-    const isRateLimit = status === 429 || error.code === "rate_limit_exceeded" || error.type === "rate_limit_exceeded";
-    
+    const isRateLimit =
+      status === 429 ||
+      errorWithStatus.code === "rate_limit_exceeded" ||
+      errorWithStatus.type === "rate_limit_exceeded";
+
     if (isRateLimit && attempt < 5) {
       let delayMs = RATE_LIMIT_RETRY_WAIT_MS * 2 ** (attempt - 1);
-      const msg = error?.message ?? "";
+      const msg = errorWithStatus.message ?? "";
       const m = /(?:retry|try) again in ([\d.]+)s/i.exec(msg);
       if (m && m[1]) {
         const suggested = parseFloat(m[1]) * 1000;
@@ -794,7 +927,9 @@ export class AgentLoopRefactored {
           delayMs = suggested;
         }
       }
-      log(`OpenAI rate limit exceeded (attempt ${attempt}/5), retrying in ${Math.round(delayMs)} ms...`);
+      log(
+        `OpenAI rate limit exceeded (attempt ${attempt}/5), retrying in ${Math.round(delayMs)} ms...`,
+      );
       await new Promise((resolve) => setTimeout(resolve, delayMs));
       return true;
     }
@@ -802,13 +937,17 @@ export class AgentLoopRefactored {
     return false;
   }
 
-  private async handleStreamProcessingError(error: any): Promise<boolean> {
+  private async handleStreamProcessingError(error: unknown): Promise<boolean> {
     const isRateLimitError = (e: unknown): boolean => {
       if (!e || typeof e !== "object") {
         return false;
       }
-      const ex: any = e;
-      return ex.status === 429 || ex.code === "rate_limit_exceeded" || ex.type === "rate_limit_exceeded";
+      const ex = e as { status?: number; code?: string; type?: string };
+      return (
+        ex.status === 429 ||
+        ex.code === "rate_limit_exceeded" ||
+        ex.type === "rate_limit_exceeded"
+      );
     };
 
     if (isRateLimitError(error)) {
@@ -824,8 +963,13 @@ export class AgentLoopRefactored {
   /**
    * Force completion when stream hangs without proper completion event
    */
-  private forceStreamCompletion(lastResponseId: string, newTurnInput: Array<ResponseInputItem>): void {
-    log(`Forcing stream completion - responseId: ${lastResponseId}, turnInput length: ${newTurnInput.length}`);
+  private forceStreamCompletion(
+    lastResponseId: string,
+    newTurnInput: Array<ResponseInputItem>,
+  ): void {
+    log(
+      `Forcing stream completion - responseId: ${lastResponseId}, turnInput length: ${newTurnInput.length}`,
+    );
 
     // Emit completion event to unblock the UI
     this.events.emitComplete();
