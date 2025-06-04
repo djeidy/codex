@@ -63,15 +63,18 @@ export class WebSocketHandlerRefactored {
       const sessionId = uuidv4();
       const session: WebSession = {
         id: sessionId,
+        socketId: this.socket.id,
         messages: [],
         config: data.config,
         lastResponseId: '',
         createdAt: new Date(),
-        updatedAt: new Date()
+        lastActivity: new Date()
       };
       
-      this.sessionManager.create(session);
-      this.currentSession = session;
+      this.currentSession = this.sessionManager.createSession({
+        socketId: this.socket.id,
+        config: data.config
+      });
       
       // Initialize agent loop with event bridge
       this.initializeAgentLoop(session);
@@ -83,7 +86,7 @@ export class WebSocketHandlerRefactored {
       });
       
     } catch (error) {
-      log('Error starting session:', error);
+      log(`Error starting session: ${error instanceof Error ? error.message : String(error)}`);
       this.socket.emit('error', {
         message: 'Failed to start session',
         error: error instanceof Error ? error.message : String(error)
@@ -100,10 +103,12 @@ export class WebSocketHandlerRefactored {
       model: session.config.model,
       provider: session.config.provider,
       config: {
+        model: session.config.model,
         provider: session.config.provider,
         apiKey: session.config.apiKey || process.env['OPENAI_API_KEY'] || '',
+        instructions: ''
       },
-      approvalPolicy: session.config.approvalMode,
+      approvalPolicy: session.config.approvalMode || 'suggest',
       disableResponseStorage: false,
       additionalWritableRoots: [],
       eventBridge: this.eventBridge
@@ -126,9 +131,16 @@ export class WebSocketHandlerRefactored {
       });
       
       // Store in session
-      if (this.currentSession) {
-        this.currentSession.messages.push(item);
-        this.sessionManager.update(this.currentSession);
+      if (this.currentSession && 'role' in item && 'content' in item) {
+        // Convert ResponseItem to session message format
+        const message = {
+          id: item.id || uuidv4(),
+          role: item.role as 'user' | 'assistant' | 'system',
+          content: typeof item.content === 'string' ? item.content : JSON.stringify(item.content),
+          timestamp: new Date()
+        };
+        this.currentSession.messages.push(message);
+        this.sessionManager.updateSession(this.currentSession);
       }
     });
     
@@ -144,7 +156,7 @@ export class WebSocketHandlerRefactored {
     this.eventBridge.onResponseId((responseId: string) => {
       if (this.currentSession) {
         this.currentSession.lastResponseId = responseId;
-        this.sessionManager.update(this.currentSession);
+        this.sessionManager.updateSession(this.currentSession);
       }
     });
     
@@ -224,14 +236,20 @@ export class WebSocketHandlerRefactored {
       };
       
       // Store user message
-      this.currentSession.messages.push(userInput as ResponseItem);
-      this.sessionManager.update(this.currentSession);
+      const userMessage = {
+        id: uuidv4(),
+        role: 'user' as const,
+        content: data.message,
+        timestamp: new Date()
+      };
+      this.currentSession.messages.push(userMessage);
+      this.sessionManager.updateSession(this.currentSession);
       
       // Run agent with the user input
       await this.agentLoop.run([userInput], this.currentSession.lastResponseId || '');
       
     } catch (error) {
-      log('Error processing user input:', error);
+      log(`Error processing user input: ${error instanceof Error ? error.message : String(error)}`);
       this.socket.emit('error', {
         message: 'Failed to process input',
         error: error instanceof Error ? error.message : String(error)
@@ -242,7 +260,7 @@ export class WebSocketHandlerRefactored {
   private handleApprovalResponse(data: ApprovalResponseData): void {
     const callback = this.pendingApprovals.get(data.approvalId);
     if (!callback) {
-      log('No pending approval found for ID:', data.approvalId);
+      log(`No pending approval found for ID: ${data.approvalId}`);
       return;
     }
     
@@ -251,7 +269,7 @@ export class WebSocketHandlerRefactored {
     
     // Send response back to agent
     const confirmation: CommandConfirmation = {
-      review: data.approved ? ReviewDecision.Approve : ReviewDecision.Deny,
+      review: data.approved ? ReviewDecision.YES : ReviewDecision.NO_EXIT,
       customDenyMessage: data.approved ? undefined : 'User denied the command'
     };
     
@@ -265,7 +283,7 @@ export class WebSocketHandlerRefactored {
   }
   
   private async handleResumeSession(sessionId: string): Promise<void> {
-    const session = this.sessionManager.get(sessionId);
+    const session = await this.sessionManager.getSession(sessionId);
     if (!session) {
       this.socket.emit('error', {
         message: 'Session not found'
