@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Socket } from 'socket.io-client'
-import { useCodexStore } from '../store/useCodexStore'
+import { useMTRStore } from '../store/useMTRStore'
 
 interface SessionManagerProps {
   socket: Socket | null
@@ -8,7 +8,7 @@ interface SessionManagerProps {
 
 export function SessionManager({ socket }: SessionManagerProps) {
   const [isCreating, setIsCreating] = useState(false)
-  const { sessions, activeSessionId, setActiveSession, addSession } = useCodexStore()
+  const { sessions, activeSessionId, setActiveSession, addSession } = useMTRStore()
 
   const handleCreateSession = () => {
     if (!socket || isCreating) return

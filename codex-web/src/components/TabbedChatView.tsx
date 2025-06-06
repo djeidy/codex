@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Socket } from 'socket.io-client'
 import { ChatView } from './ChatView'
 import { AgentActivityTab } from './AgentActivityTab'
-import { useCodexStore } from '../store/useCodexStore'
+import { useMTRStore } from '../store/useMTRStore'
 
 interface TabbedChatViewProps {
   socket: Socket | null
@@ -12,7 +12,7 @@ type TabType = 'chat' | 'agent'
 
 export function TabbedChatView({ socket }: TabbedChatViewProps) {
   const [activeTab, setActiveTab] = useState<TabType>('chat')
-  const { runningActivitiesCount } = useCodexStore()
+  const { runningActivitiesCount } = useMTRStore()
 
   useEffect(() => {
     if (!socket) return
@@ -26,15 +26,15 @@ export function TabbedChatView({ socket }: TabbedChatViewProps) {
         case 'process_start':
         case 'background_task':
           if (event.data?.status === 'running' || !event.data?.status) {
-            const currentCount = useCodexStore.getState().runningActivitiesCount
-            useCodexStore.getState().setRunningActivitiesCount(currentCount + 1)
+            const currentCount = useMTRStore.getState().runningActivitiesCount
+            useMTRStore.getState().setRunningActivitiesCount(currentCount + 1)
           }
           break
         case 'tool_result':
         case 'process_end':
           if (event.data?.status === 'success' || event.data?.status === 'error' || event.data?.exitCode !== undefined) {
-            const currentCount = useCodexStore.getState().runningActivitiesCount
-            useCodexStore.getState().setRunningActivitiesCount(Math.max(0, currentCount - 1))
+            const currentCount = useMTRStore.getState().runningActivitiesCount
+            useMTRStore.getState().setRunningActivitiesCount(Math.max(0, currentCount - 1))
           }
           break
       }

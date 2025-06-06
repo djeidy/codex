@@ -1,5 +1,5 @@
 import { FormEvent, useRef, useEffect, KeyboardEvent } from 'react'
-import { useCodexStore } from '../store/useCodexStore'
+import { useMTRStore } from '../store/useMTRStore'
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void
@@ -7,7 +7,7 @@ interface ChatInputProps {
 }
 
 export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
-  const { draftMessage, setDraftMessage } = useCodexStore()
+  const { draftMessage, setDraftMessage } = useMTRStore()
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleSubmit = (e?: FormEvent) => {

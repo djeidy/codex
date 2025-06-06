@@ -1,6 +1,6 @@
-# OpenAI Codex Web UI
+# MTR Log Analyzer Web UI
 
-A modern web-based user interface for the OpenAI Codex CLI tool, providing a ChatGPT-like experience with real-time progress visualization and interactive approval workflows.
+A modern web-based user interface for the MTR Log Analyzer, providing a ChatGPT-like experience with real-time progress visualization and interactive approval workflows.
 
 ## Features
 
@@ -17,7 +17,7 @@ A modern web-based user interface for the OpenAI Codex CLI tool, providing a Cha
 
 - Node.js 22+ 
 - pnpm 9+
-- The Codex CLI must be built first
+- The MTR CLI must be built first
 
 ### Installation
 
@@ -42,7 +42,7 @@ There are two ways to run the web UI:
 ```
 
 This will:
-- Start the Codex web server on port 3001
+- Start the MTR web server on port 3001
 - Start the React development server on port 3000
 - Open http://localhost:3000 in your browser
 
@@ -52,7 +52,7 @@ In separate terminals:
 
 ```bash
 # Terminal 1: Start the web server
-codex-cli/bin/codex.js --web-server
+codex-cli/bin/mtr.js --web-server
 
 # Terminal 2: Start the React dev server
 cd codex-web && pnpm dev

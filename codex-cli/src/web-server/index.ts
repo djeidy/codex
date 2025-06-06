@@ -8,7 +8,7 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 
-export class CodexWebServer {
+export class MTRWebServer {
   private app: express.Application;
   private httpServer: Server;
   private io: SocketIOServer;
@@ -19,9 +19,13 @@ export class CodexWebServer {
     this.httpServer = createServer(this.app);
     this.io = new SocketIOServer(this.httpServer, {
       cors: {
-        origin: process.env['WEB_UI_URL'] || 'http://localhost:3000',
+        origin: process.env['WEB_UI_URL'] || ['http://localhost:3000', 'http://localhost:3002'],
         methods: ['GET', 'POST']
-      }
+      },
+      maxHttpBufferSize: 50 * 1024 * 1024, // 50MB for file uploads
+      pingTimeout: 60000, // 60 seconds
+      pingInterval: 25000, // 25 seconds
+      transports: ['websocket', 'polling']
     });
     
     this.sessionManager = new WebSessionManager();
@@ -32,10 +36,11 @@ export class CodexWebServer {
   
   private setupMiddleware(): void {
     this.app.use(cors({
-      origin: process.env['WEB_UI_URL'] || 'http://localhost:3000',
+      origin: process.env['WEB_UI_URL'] || ['http://localhost:3000', 'http://localhost:3002'],
       credentials: true
     }));
-    this.app.use(express.json());
+    this.app.use(express.json({ limit: '50mb' }));
+    this.app.use(express.urlencoded({ limit: '50mb', extended: true }));
   }
   
   private setupRoutes(): void {
@@ -67,7 +72,7 @@ export class CodexWebServer {
   async start(): Promise<void> {
     return new Promise<void>((resolve) => {
       this.httpServer.listen(this.port, () => {
-        log(`Codex Web Server running on port ${this.port}`);
+        log(`MTR Web Server running on port ${this.port}`);
         resolve();
       });
     });
@@ -77,7 +82,7 @@ export class CodexWebServer {
     return new Promise<void>((resolve) => {
       this.io.close(() => {
         this.httpServer.close(() => {
-          log('Codex Web Server stopped');
+          log('MTR Web Server stopped');
           resolve();
         });
       });
@@ -86,8 +91,8 @@ export class CodexWebServer {
 }
 
 // Export for CLI integration
-export async function startWebServer(port?: number): Promise<CodexWebServer> {
-  const server = new CodexWebServer(port);
+export async function startWebServer(port?: number): Promise<MTRWebServer> {
+  const server = new MTRWebServer(port);
   await server.start();
   return server;
 }

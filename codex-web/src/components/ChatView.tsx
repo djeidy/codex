@@ -3,7 +3,10 @@ import { Socket } from 'socket.io-client'
 import { MessageHistory } from './MessageHistory'
 import { ChatInput } from './ChatInput'
 import { ApprovalOverlay } from './ApprovalOverlay'
-import { useCodexStore } from '../store/useCodexStore'
+import { FileUploader } from './FileUploader'
+import { SessionFileManager } from './SessionFileManager'
+import { useMTRStore } from '../store/useMTRStore'
+import { Files, X } from 'lucide-react'
 
 interface ChatViewProps {
   socket: Socket | null
@@ -21,6 +24,8 @@ interface ActiveToolCall {
 export function ChatView({ socket }: ChatViewProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [activeToolCalls, setActiveToolCalls] = useState<ActiveToolCall[]>([])
+  const [showFileUpload, setShowFileUpload] = useState(false)
+  const [showFileManager, setShowFileManager] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const {
     activeSessionId,
@@ -31,8 +36,34 @@ export function ChatView({ socket }: ChatViewProps) {
     setStreamingMessageId,
     approvalQueue,
     addApprovalRequest,
-    removeApprovalRequest
-  } = useCodexStore()
+    removeApprovalRequest,
+    sessionFiles,
+    activeTSG,
+    uploadSessionFiles
+  } = useMTRStore()
+
+  const handleSendMessage = (message: string) => {
+    if (!socket || !activeSessionId) return
+
+    // Clear any active tool calls from previous messages
+    setActiveToolCalls([])
+    
+    // Add user message to store
+    const userMessage = {
+      id: `msg-${Date.now()}`,
+      role: 'user' as const,
+      content: message,
+      timestamp: new Date(),
+      status: 'complete' as const
+    }
+    addMessage(userMessage)
+
+    // Send to server
+    socket.emit('user_input', {
+      sessionId: activeSessionId,
+      message
+    })
+  }
 
   useEffect(() => {
     if (!socket) return
@@ -238,35 +269,37 @@ export function ChatView({ socket }: ChatViewProps) {
 
     socket.on('approval_request', handleApprovalRequest)
 
+    // Handle auto-analysis trigger
+    const handleAutoAnalysisTrigger = (data: { message: string; files: string[] }) => {
+      console.log('Auto-analysis trigger:', data)
+      
+      // Show a system message that analysis will begin
+      const systemMessage = {
+        id: `msg-${Date.now()}-system`,
+        role: 'system' as const,
+        content: `Auto-analysis triggered for ${data.files.length} file(s): ${data.files.join(', ')}`,
+        timestamp: new Date(),
+        status: 'complete' as const
+      }
+      addMessage(systemMessage)
+      
+      // Automatically send the analysis request
+      handleSendMessage(data.message)
+    }
+
+    socket.on('message', (message: any) => {
+      if (message.type === 'auto-analysis:trigger') {
+        handleAutoAnalysisTrigger(message.data)
+      }
+    })
+
     // Cleanup
     return () => {
       socket.off('agent_event', handleAgentEvent)
       socket.off('approval_request', handleApprovalRequest)
+      socket.off('message')
     }
-  }, [socket, streamingMessageId, messages, addMessage, updateMessage, setStreamingMessageId, addApprovalRequest, activeToolCalls, setActiveToolCalls])
-
-  const handleSendMessage = (message: string) => {
-    if (!socket || !activeSessionId) return
-
-    // Clear any active tool calls from previous messages
-    setActiveToolCalls([])
-    
-    // Add user message to store
-    const userMessage = {
-      id: `msg-${Date.now()}`,
-      role: 'user' as const,
-      content: message,
-      timestamp: new Date(),
-      status: 'complete' as const
-    }
-    addMessage(userMessage)
-
-    // Send to server
-    socket.emit('user_input', {
-      sessionId: activeSessionId,
-      message
-    })
-  }
+  }, [socket, streamingMessageId, messages, addMessage, updateMessage, setStreamingMessageId, addApprovalRequest, activeToolCalls, setActiveToolCalls, handleSendMessage])
 
   const handleApproval = (approvalId: string, approved: boolean) => {
     if (!socket || !activeSessionId) return
@@ -280,13 +313,47 @@ export function ChatView({ socket }: ChatViewProps) {
     removeApprovalRequest(approvalId)
   }
 
+  const handleFileUpload = async (files: File[]) => {
+    try {
+      await uploadSessionFiles(files)
+      setShowFileUpload(false)
+    } catch (error) {
+      console.error('File upload failed:', error)
+      // Keep the modal open on error so user can see what happened
+      alert(`Upload failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
+    }
+  }
+
   // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
   return (
-    <div className="flex-1 flex flex-col relative">
+    <div className="flex-1 flex flex-col relative h-full">
+      {/* Active TSG Indicator */}
+      {activeTSG && (
+        <div className="px-4 py-2 bg-blue-50 dark:bg-blue-900 text-sm">
+          <span className="font-medium">Active TSG:</span> {activeTSG}
+        </div>
+      )}
+
+      {/* Session Files Indicator */}
+      {sessionFiles.length > 0 && (
+        <div className="px-4 py-2 bg-green-50 dark:bg-green-900 text-sm flex items-center justify-between">
+          <div>
+            <span className="font-medium">Session Files:</span> {sessionFiles.length} file{sessionFiles.length !== 1 ? 's' : ''} uploaded
+          </div>
+          <button
+            onClick={() => setShowFileManager(true)}
+            className="text-blue-600 hover:underline flex items-center gap-1"
+          >
+            <Files className="w-4 h-4" />
+            Manage Files
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-4">
         <div className="flex items-center justify-between">
@@ -305,7 +372,7 @@ export function ChatView({ socket }: ChatViewProps) {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4 h-0">
         <MessageHistory messages={messages} />
         
         {/* Thinking indicator when agent is working but no streaming message */}
@@ -335,9 +402,68 @@ export function ChatView({ socket }: ChatViewProps) {
         <div ref={messagesEndRef} />
       </div>
 
+      {/* File Upload Modal */}
+      {showFileUpload && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-lg font-medium mb-4">Upload Log Files</h3>
+            <FileUploader onUpload={handleFileUpload} />
+            <button
+              onClick={() => setShowFileUpload(false)}
+              className="mt-4 w-full px-4 py-2 border rounded hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* File Manager Modal */}
+      {showFileManager && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-lg w-full max-w-6xl h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b dark:border-gray-700">
+              <h2 className="text-xl font-semibold">Session Files</h2>
+              <button
+                onClick={() => setShowFileManager(false)}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="h-[calc(80vh-64px)]">
+              <SessionFileManager />
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Input */}
       <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
-        <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowFileUpload(true)}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded"
+            title="Upload files"
+          >
+            📎
+          </button>
+          <button
+            onClick={() => setShowFileManager(true)}
+            className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded relative"
+            title="Manage files"
+          >
+            <Files className="w-5 h-5" />
+            {sessionFiles.length > 0 && (
+              <span className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                {sessionFiles.length}
+              </span>
+            )}
+          </button>
+          <div className="flex-1">
+            <ChatInput onSendMessage={handleSendMessage} disabled={isLoading} />
+          </div>
+        </div>
       </div>
 
       {/* Approval Overlay */}

@@ -1,8 +1,8 @@
-# OpenAI Codex Web UI Implementation Summary
+# MTR Web UI Implementation Summary
 
 ## Overview
 
-I have successfully implemented a web-based UI for the OpenAI Codex CLI tool, providing a ChatGPT-like interface with real-time progress visualization and interactive approval workflows.
+I have successfully implemented a web-based UI for the MTR CLI tool, providing a ChatGPT-like interface with real-time progress visualization and interactive approval workflows.
 
 ## What Was Implemented
 
@@ -15,7 +15,7 @@ I have successfully implemented a web-based UI for the OpenAI Codex CLI tool, pr
 
 **CLI Integration**
 - Modified `cli.tsx` to add `--web-server` flag
-- Server starts with: `codex --web-server` or `node dist/cli.js --web-server`
+- Server starts with: `mtr --web-server` or `node dist/cli.js --web-server`
 
 ### 2. Frontend React Application (✅ Completed)
 

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { Socket } from 'socket.io-client'
-import { useCodexStore } from '../store/useCodexStore'
+import { useMTRStore } from '../store/useMTRStore'
 
 interface AgentActivityTabProps {
   socket: Socket | null
@@ -30,7 +30,7 @@ export function AgentActivityTab({ socket }: AgentActivityTabProps) {
     updateAgentActivity,
     addAgentProcess,
     removeAgentProcess
-  } = useCodexStore()
+  } = useMTRStore()
 
   // Keep track of processes for potential future use
   console.log('Current processes:', JSON.stringify(Array.from(agentProcesses.entries()), null, 2))

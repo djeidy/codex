@@ -2,6 +2,8 @@ import type { ReviewDecision } from "./review.js";
 import type { ApplyPatchCommand, ApprovalPolicy } from "../../approvals.js";
 import type { AppConfig } from "../config.js";
 import type { ResponseEvent } from "../responses.js";
+import type { SessionFile } from "../storage/session-storage.js";
+import type { ExecInput } from "./sandbox/interface.js";
 import type {
   ResponseFunctionToolCall,
   ResponseInputItem,
@@ -30,6 +32,14 @@ import {
   setSessionId,
 } from "../session.js";
 import { handleExecCommand } from "./handle-exec-command.js";
+import {
+  tsgReaderTool,
+  executeTSGReader,
+  listAvailableTSGs,
+} from "./tools/tsg-reader.js";
+import { LOG_ANALYZER_SYSTEM_PROMPT, LOG_ANALYZER_CONTEXT_PROMPT } from "../../prompts/log-analyzer-prompt.js";
+import { getSessionFiles } from "../session-files.js";
+// import { SCENARIO_PROMPTS } from "../../prompts/scenario-prompts.js"; // TODO: Implement scenario-specific prompts
 import { HttpsProxyAgent } from "https-proxy-agent";
 import { spawnSync } from "node:child_process";
 import { randomUUID } from "node:crypto";
@@ -81,6 +91,12 @@ type AgentLoopParams = {
     applyPatch: ApplyPatchCommand | undefined,
   ) => Promise<CommandConfirmation>;
   onLastResponseId: (lastResponseId: string) => void;
+  
+  /** Active TSG for this session */
+  activeTSG?: string | null;
+  
+  /** Session ID for this agent loop instance */
+  sessionId?: string;
 };
 
 const shellFunctionTool: FunctionTool = {
@@ -121,6 +137,8 @@ export class AgentLoop {
   private additionalWritableRoots: ReadonlyArray<string>;
   /** Whether we ask the API to persist conversation state on the server */
   private readonly disableResponseStorage: boolean;
+  /** Active TSG for this session */
+  private activeTSG?: string | null;
 
   // Using `InstanceType<typeof OpenAI>` sidesteps typing issues with the OpenAI package under
   // the TS 5+ `moduleResolution=bundler` setup. OpenAI client instance. We keep the concrete
@@ -280,11 +298,14 @@ export class AgentLoop {
     getCommandConfirmation,
     onLastResponseId,
     additionalWritableRoots,
+    activeTSG,
+    sessionId,
   }: AgentLoopParams & { config?: AppConfig }) {
     this.model = model;
     this.provider = provider;
     this.instructions = instructions;
     this.approvalPolicy = approvalPolicy;
+    this.activeTSG = activeTSG;
 
     // If no `config` has been provided we derive a minimal stub so that the
     // rest of the implementation can rely on `this.config` always being a
@@ -302,7 +323,7 @@ export class AgentLoop {
     this.onLastResponseId = onLastResponseId;
 
     this.disableResponseStorage = disableResponseStorage ?? false;
-    this.sessionId = getSessionId() || randomUUID().replaceAll("-", "");
+    this.sessionId = sessionId || getSessionId() || randomUUID().replaceAll("-", "");
     // Configure OpenAI client with optional timeout (ms) from environment
     const timeoutMs = OPENAI_TIMEOUT_MS;
     const apiKey = this.config.apiKey ?? process.env["OPENAI_API_KEY"] ?? "";
@@ -403,7 +424,19 @@ export class AgentLoop {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const callId: string = (item as any).call_id ?? (item as any).id;
 
-    const args = parseToolCallArguments(rawArguments ?? "{}");
+    // Parse arguments differently based on tool name
+    let args: ExecInput | Record<string, unknown> | undefined;
+    if (name === "shell" || name === "container.exec") {
+      args = parseToolCallArguments(rawArguments ?? "{}");
+    } else {
+      // For non-shell tools, parse JSON directly
+      try {
+        args = JSON.parse(rawArguments ?? "{}") as Record<string, unknown>;
+      } catch (e) {
+        args = undefined;
+      }
+    }
+    
     log(
       `handleFunctionCall(): name=${
         name ?? "undefined"
@@ -448,7 +481,7 @@ export class AgentLoop {
         metadata,
         additionalItems: additionalItemsFromExec,
       } = await handleExecCommand(
-        args,
+        args as ExecInput,
         this.config,
         this.approvalPolicy,
         this.additionalWritableRoots,
@@ -459,6 +492,21 @@ export class AgentLoop {
 
       if (additionalItemsFromExec) {
         additionalItems.push(...additionalItemsFromExec);
+      }
+    } else if (name === "read_tsg") {
+      try {
+        const tsgArgs = args as unknown as {
+          tsgName: string;
+          fileName?: string;
+          searchQuery?: string;
+        };
+        const result = await executeTSGReader(tsgArgs);
+        outputItem.output =
+          typeof result === "string" ? result : JSON.stringify(result);
+      } catch (error) {
+        outputItem.output = JSON.stringify({
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
@@ -530,6 +578,60 @@ export class AgentLoop {
     }
 
     return [outputItem, ...additionalItems];
+  }
+
+  private async buildDynamicContext(activeTSG?: string | null): Promise<string> {
+    const contextLines: Array<string> = [];
+    
+    try {
+      // Get available TSGs
+      const tsgs = await listAvailableTSGs();
+      
+      // Get uploaded session files
+      const sessionFiles = getSessionFiles(this.sessionId);
+      
+      // Build session context object
+      const sessionContext = {
+        sessionId: this.sessionId,
+        activeTSG: activeTSG || null,
+        availableTSGs: tsgs,
+        uploadedFiles: sessionFiles
+      };
+      
+      // Format uploaded files information
+      let uploadedFilesInfo = "None";
+      if (sessionFiles && sessionFiles.length > 0) {
+        uploadedFilesInfo = sessionFiles.map((file: SessionFile) => 
+          `\n  - ${file.name} at ${file.path} (${file.size} bytes, uploaded ${new Date(file.uploadedAt).toLocaleString()})`
+        ).join('');
+      }
+      
+      // Format the context using the LOG_ANALYZER_CONTEXT_PROMPT template
+      const formattedContext = LOG_ANALYZER_CONTEXT_PROMPT.replace(
+        '{sessionContext}',
+        `- Session ID: ${sessionContext.sessionId}
+- Active TSG: ${sessionContext.activeTSG || "None"}
+- Available TSGs: ${sessionContext.availableTSGs.length > 0 ? sessionContext.availableTSGs.join(", ") : "None"}
+- Uploaded Files: ${uploadedFilesInfo}`
+      );
+      
+      contextLines.push(formattedContext);
+      
+    } catch (error) {
+      // If we can't get the dynamic context, log but don't fail
+      log(`Failed to build dynamic context: ${error}`);
+      
+      // Provide a fallback context
+      contextLines.push(`## Session Information
+- Session ID: ${this.sessionId}
+- Unable to load dynamic context
+
+## Available Tools
+- shell: Execute read-only shell commands
+- read_tsg: Read troubleshooting guide documentation`);
+    }
+    
+    return contextLines.join('\n');
   }
 
   public async run(
@@ -616,7 +718,10 @@ export class AgentLoop {
       // `disableResponseStorage === true`.
       let transcriptPrefixLen = 0;
 
-      let tools: Array<Tool> = [shellFunctionTool];
+      let tools: Array<Tool> = [
+        shellFunctionTool,
+        tsgReaderTool,
+      ];
       if (this.model.startsWith("codex")) {
         tools = [localShellTool];
       }
@@ -749,6 +854,9 @@ export class AgentLoop {
         }, 3); // Small 3ms delay for readable streaming.
       };
 
+      // Build dynamic context about available session files and TSGs once per agent run
+      const dynamicContext = await this.buildDynamicContext(this.activeTSG);
+
       while (turnInput.length > 0) {
         if (this.canceled || this.hardAbort.signal.aborted) {
           this.onLoading(false);
@@ -785,8 +893,10 @@ export class AgentLoop {
               reasoning = { effort: this.config.reasoningEffort ?? "medium" };
               reasoning.summary = "auto";
             }
+            
             const mergedInstructions = [
               prefix,
+              dynamicContext,
               this.instructions,
             ]
               .filter(Boolean)
@@ -1603,49 +1713,9 @@ if (spawnSync("rg", ["--version"], { stdio: "ignore" }).status === 0) {
   );
 }
 const dynamicPrefix = dynamicLines.join("\n");
-const prefix = `You are operating as and within the Codex CLI, a specialized log analysis assistant built by OpenAI. It wraps OpenAI models to enable natural language interaction with log files and system analysis. You are expected to be precise, safe, and helpful.
 
-You can:
-- Receive user prompts, log files, and analysis requests.
-- Stream responses and emit function calls (e.g., read-only shell commands for log analysis).
-- Analyze logs, identify patterns, and provide troubleshooting insights.
-- Work with read-only access to files and systems for investigation purposes.
-- Log telemetry so sessions can be replayed or inspected later.
-- More details on your functionality are available at \`codex --help\`
 
-The Codex CLI is open-sourced. Don't confuse yourself with the old Codex language model built by OpenAI many moons ago (this is understandably top of mind for you!). Within this context, Codex refers to the open-source log analysis interface.
-
-You are a specialized log analysis agent - please keep going until the user's query is completely resolved, before ending your turn and yielding back to the user. Only terminate your turn when you are sure that the analysis is complete. If you are not sure about file content or log structure pertaining to the user's request, use your tools to read files and gather the relevant information: do NOT guess or make up an answer.
-
-Please resolve the user's task by analyzing and investigating log files and system information in your current session. You are a deployed log analysis agent. Your session allows for you to read and analyze files but NOT to modify them. You must fully analyze the problem for your answer to be considered correct.
-
-You MUST adhere to the following criteria when executing the task:
-- Working with the files in the current environment is allowed for READ-ONLY analysis, even if they are proprietary.
-- Analyzing logs for patterns, errors, and insights is your primary function.
-- Showing user log content and analysis details is allowed.
-- You CANNOT create, modify, or delete files - you can only read and analyze them.
-- Use shell commands for read-only operations only: cat, grep, find, head, tail, less, ps, df, git status, etc.
-- If completing the user's task requires analyzing files:
-    - Your analysis and final answer should follow these *ANALYSIS GUIDELINES*:
-        - Identify the root cause of issues rather than just surface-level symptoms, when possible.
-        - Avoid unneeded complexity in your analysis.
-            - Focus on the specific problem the user is asking about; ignore unrelated issues unless they're relevant.
-        - Use \`git log\` and \`git blame\` to search the history of files if additional context is required; internet access is disabled.
-        - Provide clear, actionable insights based on your log analysis.
-        - Use appropriate shell commands to gather information: grep, find, cat, head, tail, etc.
-        - When analyzing logs, look for patterns, timestamps, error messages, and correlations.
-        - Once you finish your analysis, you must:
-            - Summarize your findings clearly
-            - Identify any patterns or trends you discovered
-            - Provide recommendations or next steps if applicable
-            - For smaller analysis tasks, describe findings in brief bullet points
-            - For more complex analysis, include brief high-level summary, use bullet points, and include details that would be relevant for troubleshooting.
-- If the user asks questions about log content or system analysis:
-    - Respond in a friendly tone as a knowledgeable log analysis specialist, capable and eager to help with investigation.
-- When your task involves analyzing files:
-    - Use read-only commands to examine file contents, search for patterns, and gather insights.
-    - Do NOT attempt to modify, create, or delete any files.
-    - Show relevant excerpts from log files when they support your analysis.
+const prefix = LOG_ANALYZER_SYSTEM_PROMPT + `
 
 ${dynamicPrefix}`;
 

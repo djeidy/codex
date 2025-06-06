@@ -18,6 +18,14 @@ export interface WebSession {
   lastResponseId?: string;
   createdAt: Date;
   lastActivity: Date;
+  // New fields for log analyzer
+  uploadedFiles?: Array<string>;
+  activeTSG?: string | null;
+  sessionMetadata?: {
+    createdAt: string;
+    lastActivity: string;
+    fileUploadCount: number;
+  };
 }
 
 interface CreateSessionOptions {
@@ -35,13 +43,21 @@ export class WebSessionManager {
   }
   
   createSession(options: CreateSessionOptions): WebSession {
+    const now = new Date();
     const session: WebSession = {
       id: uuidv4(),
       socketId: options.socketId,
       config: options.config,
       messages: [],
-      createdAt: new Date(),
-      lastActivity: new Date()
+      createdAt: now,
+      lastActivity: now,
+      uploadedFiles: [],
+      activeTSG: null,
+      sessionMetadata: {
+        createdAt: now.toISOString(),
+        lastActivity: now.toISOString(),
+        fileUploadCount: 0
+      }
     };
     
     this.sessions.set(session.id, session);
@@ -63,7 +79,11 @@ export class WebSessionManager {
     // Check memory first
     if (this.sessions.has(sessionId)) {
       const session = this.sessions.get(sessionId)!;
-      session.lastActivity = new Date();
+      const now = new Date();
+      session.lastActivity = now;
+      if (session.sessionMetadata) {
+        session.sessionMetadata.lastActivity = now.toISOString();
+      }
       return session;
     }
     

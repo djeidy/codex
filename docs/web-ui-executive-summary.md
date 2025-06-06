@@ -1,8 +1,8 @@
-# OpenAI Codex Web UI - Executive Summary
+# MTR Web UI - Executive Summary
 
 ## Project Overview
 
-This project adds a modern web-based user interface to the OpenAI Codex CLI tool, providing a ChatGPT-like experience with real-time progress visualization and interactive approval workflows.
+This project adds a modern web-based user interface to the MTR CLI tool, providing a ChatGPT-like experience with real-time progress visualization and interactive approval workflows.
 
 ## Deliverables
 

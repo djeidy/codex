@@ -99,6 +99,11 @@ code {
   @apply font-mono text-sm;
 }
 
+/* Emoji visibility in dark mode */
+.dark .emoji-icon {
+  filter: brightness(0.9) saturate(1.2);
+}
+
 /* Animations */
 @keyframes fadeIn {
   from {

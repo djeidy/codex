@@ -1,11 +1,11 @@
 #!/bin/bash
 
-echo "Starting OpenAI Codex Web UI..."
+echo "Starting MTR Log Analyzer Web UI..."
 echo "================================"
 
 # Start the web server in the background
-echo "Starting Codex Web Server on port 3001..."
-node codex-cli/bin/codex.js --web-server &
+echo "Starting MTR Web Server on port 3001..."
+node codex-cli/bin/mtr.js --web-server &
 SERVER_PID=$!
 
 # Give the server a moment to start

@@ -1,8 +1,8 @@
-# OpenAI Codex Web UI Implementation Plan
+# MTR Web UI Implementation Plan
 
 ## Executive Summary
 
-This document outlines a comprehensive plan for developing a web-based user interface for the OpenAI Codex CLI tool. The web UI will replicate and enhance existing terminal functionality while providing a modern, accessible interface with real-time progress visualization and interactive approval workflows.
+This document outlines a comprehensive plan for developing a web-based user interface for the MTR CLI tool. The web UI will replicate and enhance existing terminal functionality while providing a modern, accessible interface with real-time progress visualization and interactive approval workflows.
 
 ## Technical Architecture
 
@@ -60,7 +60,7 @@ This document outlines a comprehensive plan for developing a web-based user inte
 │  └─────────────────────────────────────────────────────────┘ │
 │                                                               │
 │  ┌─────────────────────────────────────────────────────────┐ │
-│  │              Existing Codex Agent System                 │ │
+│  │              Existing MTR Agent System                   │ │
 │  │  ┌──────────┐  ┌───────────┐  ┌──────────────┐        │ │
 │  │  │  Agent   │  │  Sandbox  │  │     Tool     │        │ │
 │  │  │   Loop   │  │  Executor │  │   Executor   │        │ │
@@ -75,7 +75,7 @@ This document outlines a comprehensive plan for developing a web-based user inte
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Logo  │  Session: current  │  Model: gpt-4  │  Settings ⚙  │
+│  Logo  │  Session: current  │  Active TSG  │  Settings ⚙  │
 ├─────────────────────────────────────────────────────────────┤
 │ ┌─────────────┐ ┌─────────────────────────────────────────┐ │
 │ │             │ │                                           │ │
@@ -191,7 +191,7 @@ interface ProgressEvent {
 1. **Create Web Server Module** (`codex-cli/src/web-server/`)
    ```typescript
    // server.ts
-   export class CodexWebServer {
+   export class MTRWebServer {
      private io: Server;
      private agentManager: AgentManager;
      
@@ -231,7 +231,7 @@ interface ProgressEvent {
 
 1. **Project Structure**
    ```
-   codex-web/
+   mtr-web/
    ├── src/
    │   ├── components/
    │   │   ├── Chat/
@@ -248,7 +248,7 @@ interface ProgressEvent {
 
 2. **State Management with Zustand**
    ```typescript
-   interface CodexStore {
+   interface MTRStore {
      sessions: Map<string, Session>;
      activeSessionId: string | null;
      messages: Message[];
@@ -381,4 +381,4 @@ services:
 
 ## Conclusion
 
-This implementation plan provides a comprehensive roadmap for developing a web-based UI for OpenAI Codex CLI. The architecture leverages existing code while adding modern web capabilities, ensuring feature parity and enhanced user experience. The phased approach allows for iterative development with clear milestones and deliverables.
+This implementation plan provides a comprehensive roadmap for developing a web-based UI for MTR CLI. The architecture leverages existing code while adding modern web capabilities, ensuring feature parity and enhanced user experience. The phased approach allows for iterative development with clear milestones and deliverables.

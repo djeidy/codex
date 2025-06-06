@@ -51,8 +51,8 @@ export function ToolCall({ tool }: ToolCallProps) {
         </div>
       </div>
       {tool.output && (
-        <div className="bg-gray-900 px-3 py-2">
-          <pre className="text-xs text-gray-100 overflow-x-auto whitespace-pre-wrap">
+        <div className="bg-gray-50 dark:bg-gray-800 px-3 py-2">
+          <pre className="text-xs text-gray-800 dark:text-gray-200 overflow-x-auto whitespace-pre-wrap">
             {tool.output}
           </pre>
         </div>

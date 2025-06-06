@@ -1,8 +1,8 @@
-# OpenAI Codex Web UI Integration Strategy
+# MTR Web UI Integration Strategy
 
 ## Overview
 
-This document outlines the strategy for integrating the web UI with the existing OpenAI Codex CLI codebase, ensuring minimal disruption to the current architecture while maximizing code reuse.
+This document outlines the strategy for integrating the web UI with the existing MTR CLI codebase, ensuring minimal disruption to the current architecture while maximizing code reuse.
 
 ## Integration Architecture
 
@@ -20,7 +20,7 @@ This document outlines the strategy for integrating the web UI with the existing
 └─────────────────────┬───────────────────────────────┘
                       │ Direct Function Calls
 ┌─────────────────────┴───────────────────────────────┐
-│            Existing Codex Core Layer                 │
+│            Existing MTR Core Layer                   │
 │  (AgentLoop, Tools, Sandbox, Config - Unchanged)   │
 └─────────────────────────────────────────────────────┘
 ```
@@ -39,7 +39,7 @@ import { AgentLoop } from '../utils/agent/agent-loop';
 import { WebSessionManager } from './session-manager';
 import { WebSocketHandler } from './websocket-handler';
 
-export class CodexWebServer {
+export class MTRWebServer {
   private app: express.Application;
   private io: SocketIOServer;
   private sessionManager: WebSessionManager;
@@ -68,7 +68,7 @@ export class CodexWebServer {
   
   async start() {
     await this.httpServer.listen(this.port);
-    console.log(`Codex Web Server running on port ${this.port}`);
+    console.log(`MTR Web Server running on port ${this.port}`);
   }
 }
 ```
@@ -439,13 +439,13 @@ export class AuthMiddleware {
 Update project structure:
 
 ```
-codex/
-├── codex-cli/          # Existing CLI
+mtr/
+├── mtr-cli/          # Existing CLI
 │   ├── src/
 │   │   ├── web-server/ # New web server code
 │   │   └── ...existing code
 │   └── package.json
-├── codex-web/          # New React app
+├── mtr-web/          # New React app
 │   ├── src/
 │   ├── public/
 │   └── package.json
@@ -514,7 +514,7 @@ const args = process.argv.slice(2);
 
 if (args.includes('--web-server')) {
   // Start web server mode
-  const server = new CodexWebServer();
+  const server = new MTRWebServer();
   await server.start();
 } else {
   // Normal CLI mode
@@ -608,7 +608,7 @@ services:
       - "3001:3001"
     volumes:
       - ./workspace:/workspace
-      - ~/.codex:/root/.codex
+      - ~/.mtr:/root/.mtr
     environment:
       - REDIS_URL=redis://redis:6379
     depends_on:

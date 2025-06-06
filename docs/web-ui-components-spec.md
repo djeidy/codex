@@ -1,4 +1,4 @@
-# OpenAI Codex Web UI Component Specifications
+# MTR Web UI Component Specifications
 
 ## Design System
 

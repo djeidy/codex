@@ -1,16 +1,16 @@
 {
-  "name": "codex-monorepo",
+  "name": "mtr-monorepo",
   "private": true,
   "description": "Tools for repo-wide maintenance.",
   "scripts": {
-    "release": "pnpm --filter @openai/codex run release",
+    "release": "pnpm --filter @openai/mtr run release",
     "format": "prettier --check *.json *.md .github/workflows/*.yml",
     "format:fix": "prettier --write *.json *.md .github/workflows/*.yml",
-    "build": "pnpm --filter @openai/codex run build",
-    "test": "pnpm --filter @openai/codex run test",
-    "lint": "pnpm --filter @openai/codex run lint",
-    "lint:fix": "pnpm --filter @openai/codex run lint:fix",
-    "typecheck": "pnpm --filter @openai/codex run typecheck",
+    "build": "pnpm --filter @openai/mtr run build",
+    "test": "pnpm --filter @openai/mtr run test",
+    "lint": "pnpm --filter @openai/mtr run lint",
+    "lint:fix": "pnpm --filter @openai/mtr run lint:fix",
+    "typecheck": "pnpm --filter @openai/mtr run typecheck",
     "changelog": "git-cliff --config cliff.toml --output CHANGELOG.ignore.md $LAST_RELEASE_TAG..HEAD",
     "prepare": "husky",
     "husky:add": "husky add"
@@ -44,7 +44,7 @@
     ".github/workflows/*.yml": "prettier --write",
     "**/*.{js,ts,tsx}": [
       "prettier --write",
-      "pnpm --filter @openai/codex run lint",
+      "pnpm --filter @openai/mtr run lint",
       "cd codex-cli && pnpm run typecheck"
     ]
   },

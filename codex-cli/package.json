@@ -1,9 +1,9 @@
 {
-  "name": "@openai/codex",
+  "name": "@openai/mtr",
   "version": "0.0.0-dev",
   "license": "Apache-2.0",
   "bin": {
-    "codex": "bin/codex.js"
+    "mtr": "bin/mtr.js"
   },
   "type": "module",
   "engines": {
