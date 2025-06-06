@@ -37,7 +37,10 @@ import {
   executeTSGReader,
   listAvailableTSGs,
 } from "./tools/tsg-reader.js";
-import { LOG_ANALYZER_SYSTEM_PROMPT, LOG_ANALYZER_CONTEXT_PROMPT } from "../../prompts/log-analyzer-prompt.js";
+import {
+  LOG_ANALYZER_SYSTEM_PROMPT,
+  LOG_ANALYZER_CONTEXT_PROMPT,
+} from "../../prompts/log-analyzer-prompt.js";
 import { getSessionFiles } from "../session-files.js";
 // import { SCENARIO_PROMPTS } from "../../prompts/scenario-prompts.js"; // TODO: Implement scenario-specific prompts
 import { HttpsProxyAgent } from "https-proxy-agent";
@@ -91,10 +94,10 @@ type AgentLoopParams = {
     applyPatch: ApplyPatchCommand | undefined,
   ) => Promise<CommandConfirmation>;
   onLastResponseId: (lastResponseId: string) => void;
-  
+
   /** Active TSG for this session */
   activeTSG?: string | null;
-  
+
   /** Session ID for this agent loop instance */
   sessionId?: string;
 };
@@ -102,7 +105,8 @@ type AgentLoopParams = {
 const shellFunctionTool: FunctionTool = {
   type: "function",
   name: "shell",
-  description: "Runs read-only shell commands for log analysis and system inspection. Cannot modify, create, or delete files.",
+  description:
+    "Runs read-only shell commands for log analysis and system inspection. Cannot modify, create, or delete files.",
   strict: false,
   parameters: {
     type: "object",
@@ -323,7 +327,8 @@ export class AgentLoop {
     this.onLastResponseId = onLastResponseId;
 
     this.disableResponseStorage = disableResponseStorage ?? false;
-    this.sessionId = sessionId || getSessionId() || randomUUID().replaceAll("-", "");
+    this.sessionId =
+      sessionId || getSessionId() || randomUUID().replaceAll("-", "");
     // Configure OpenAI client with optional timeout (ms) from environment
     const timeoutMs = OPENAI_TIMEOUT_MS;
     const apiKey = this.config.apiKey ?? process.env["OPENAI_API_KEY"] ?? "";
@@ -436,7 +441,7 @@ export class AgentLoop {
         args = undefined;
       }
     }
-    
+
     log(
       `handleFunctionCall(): name=${
         name ?? "undefined"
@@ -500,10 +505,25 @@ export class AgentLoop {
           fileName?: string;
           searchQuery?: string;
         };
-        const result = await executeTSGReader(tsgArgs);
+
+        // Add timeout for TSG reading to prevent hanging
+        const TSG_TIMEOUT_MS = 30000; // 30 seconds
+        const timeoutPromise = new Promise<string>((_, reject) => {
+          setTimeout(
+            () => reject(new Error("TSG read operation timed out")),
+            TSG_TIMEOUT_MS,
+          );
+        });
+
+        const result = await Promise.race([
+          executeTSGReader(tsgArgs),
+          timeoutPromise,
+        ]);
+
         outputItem.output =
           typeof result === "string" ? result : JSON.stringify(result);
       } catch (error) {
+        log(`TSG reader error: ${error}`);
         outputItem.output = JSON.stringify({
           error: error instanceof Error ? error.message : String(error),
         });
@@ -580,47 +600,51 @@ export class AgentLoop {
     return [outputItem, ...additionalItems];
   }
 
-  private async buildDynamicContext(activeTSG?: string | null): Promise<string> {
+  private async buildDynamicContext(
+    activeTSG?: string | null,
+  ): Promise<string> {
     const contextLines: Array<string> = [];
-    
+
     try {
       // Get available TSGs
       const tsgs = await listAvailableTSGs();
-      
+
       // Get uploaded session files
       const sessionFiles = getSessionFiles(this.sessionId);
-      
+
       // Build session context object
       const sessionContext = {
         sessionId: this.sessionId,
         activeTSG: activeTSG || null,
         availableTSGs: tsgs,
-        uploadedFiles: sessionFiles
+        uploadedFiles: sessionFiles,
       };
-      
+
       // Format uploaded files information
       let uploadedFilesInfo = "None";
       if (sessionFiles && sessionFiles.length > 0) {
-        uploadedFilesInfo = sessionFiles.map((file: SessionFile) => 
-          `\n  - ${file.name} at ${file.path} (${file.size} bytes, uploaded ${new Date(file.uploadedAt).toLocaleString()})`
-        ).join('');
+        uploadedFilesInfo = sessionFiles
+          .map(
+            (file: SessionFile) =>
+              `\n  - ${file.name} at ${file.path} (${file.size} bytes, uploaded ${new Date(file.uploadedAt).toLocaleString()})`,
+          )
+          .join("");
       }
-      
+
       // Format the context using the LOG_ANALYZER_CONTEXT_PROMPT template
       const formattedContext = LOG_ANALYZER_CONTEXT_PROMPT.replace(
-        '{sessionContext}',
+        "{sessionContext}",
         `- Session ID: ${sessionContext.sessionId}
 - Active TSG: ${sessionContext.activeTSG || "None"}
 - Available TSGs: ${sessionContext.availableTSGs.length > 0 ? sessionContext.availableTSGs.join(", ") : "None"}
-- Uploaded Files: ${uploadedFilesInfo}`
+- Uploaded Files: ${uploadedFilesInfo}`,
       );
-      
+
       contextLines.push(formattedContext);
-      
     } catch (error) {
       // If we can't get the dynamic context, log but don't fail
       log(`Failed to build dynamic context: ${error}`);
-      
+
       // Provide a fallback context
       contextLines.push(`## Session Information
 - Session ID: ${this.sessionId}
@@ -630,8 +654,8 @@ export class AgentLoop {
 - shell: Execute read-only shell commands
 - read_tsg: Read troubleshooting guide documentation`);
     }
-    
-    return contextLines.join('\n');
+
+    return contextLines.join("\n");
   }
 
   public async run(
@@ -645,6 +669,23 @@ export class AgentLoop {
     // and terminate the current run gracefully. The calling UI can then let
     // the user retry the request if desired.
     // ---------------------------------------------------------------------
+
+    // Global timeout for the entire run to prevent infinite hangs
+    const GLOBAL_RUN_TIMEOUT_MS = 3 * 60 * 1000; // 5 minutes
+    const globalTimeout = setTimeout(() => {
+      this.onItem({
+        id: `timeout-${Date.now()}`,
+        type: "message",
+        role: "system",
+        content: [
+          {
+            type: "input_text",
+            text: "⚠️  Operation timed out after 3 minutes. Please try again or break down your request into smaller parts.",
+          },
+        ],
+      });
+      this.cancel();
+    }, GLOBAL_RUN_TIMEOUT_MS);
 
     try {
       if (this.terminated) {
@@ -718,10 +759,7 @@ export class AgentLoop {
       // `disableResponseStorage === true`.
       let transcriptPrefixLen = 0;
 
-      let tools: Array<Tool> = [
-        shellFunctionTool,
-        tsgReaderTool,
-      ];
+      let tools: Array<Tool> = [shellFunctionTool, tsgReaderTool];
       if (this.model.startsWith("codex")) {
         tools = [localShellTool];
       }
@@ -882,7 +920,9 @@ export class AgentLoop {
           stageItem(item as ResponseItem);
         }
         // Send request to OpenAI with retry on timeout.
-        let stream;
+        // Use 'any' type to handle different stream event types from various providers
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let stream: any;
 
         // Retry loop for transient errors. Up to MAX_RETRIES attempts.
         const MAX_RETRIES = 8;
@@ -893,7 +933,7 @@ export class AgentLoop {
               reasoning = { effort: this.config.reasoningEffort ?? "medium" };
               reasoning.summary = "auto";
             }
-            
+
             const mergedInstructions = [
               prefix,
               dynamicContext,
@@ -1138,111 +1178,148 @@ export class AgentLoop {
           try {
             let newTurnInput: Array<ResponseInputItem> = [];
 
-            // eslint-disable-next-line no-await-in-loop
-            for await (const event of stream as AsyncIterable<ResponseEvent>) {
-              log(`AgentLoop.run(): response event ${event.type}`);
-
-              // process and surface each item (no-op until we can depend on streaming events)
-              if (event.type === "response.output_item.done") {
-                const item = event.item;
-                // 1) if it's a reasoning item, annotate it
-                type ReasoningItem = { type?: string; duration_ms?: number };
-                const maybeReasoning = item as ReasoningItem;
-                if (maybeReasoning.type === "reasoning") {
-                  maybeReasoning.duration_ms = Date.now() - thinkingStart;
+            // Add stream timeout to prevent infinite waiting
+            const STREAM_TIMEOUT_MS = 2 * 60 * 1000; // 2 minutes
+            let streamActivity = Date.now();
+            const streamTimeoutCheck = setInterval(() => {
+              if (Date.now() - streamActivity > STREAM_TIMEOUT_MS) {
+                log("Stream timeout - no activity for 2 minutes");
+                clearInterval(streamTimeoutCheck);
+                // Abort the stream
+                try {
+                  (
+                    stream as unknown as { controller?: { abort?: () => void } }
+                  )?.controller?.abort?.();
+                } catch {
+                  // Ignore stream abort errors
                 }
-                if (
-                  item.type === "function_call" ||
-                  item.type === "local_shell_call"
-                ) {
-                  // Track outstanding tool call so we can abort later if needed.
-                  // The item comes from the streaming response, therefore it has
-                  // either `id` (chat) or `call_id` (responses) – we normalise
-                  // by reading both.
-                  const callId =
-                    (item as { call_id?: string; id?: string }).call_id ??
-                    (item as { id?: string }).id;
-                  if (callId) {
-                    this.pendingAborts.add(callId);
-                  }
-                } else {
-                  stageItem(item as ResponseItem);
-                }
+                this.onItem({
+                  id: `stream-timeout-${Date.now()}`,
+                  type: "message",
+                  role: "system",
+                  content: [
+                    {
+                      type: "input_text",
+                      text: "⚠️  Stream timed out. The AI response took too long. Please try again.",
+                    },
+                  ],
+                });
+                this.cancel();
               }
+            }, 5000); // Check every 5 seconds
 
-              if (event.type === "response.completed") {
-                if (thisGeneration === this.generation && !this.canceled) {
-                  for (const item of event.response.output) {
+            try {
+              // eslint-disable-next-line no-await-in-loop
+              for await (const event of stream as AsyncIterable<ResponseEvent>) {
+                // Update stream activity timestamp
+                streamActivity = Date.now();
+                log(`AgentLoop.run(): response event ${event.type}`);
+
+                // process and surface each item (no-op until we can depend on streaming events)
+                if (event.type === "response.output_item.done") {
+                  const item = event.item;
+                  // 1) if it's a reasoning item, annotate it
+                  type ReasoningItem = { type?: string; duration_ms?: number };
+                  const maybeReasoning = item as ReasoningItem;
+                  if (maybeReasoning.type === "reasoning") {
+                    maybeReasoning.duration_ms = Date.now() - thinkingStart;
+                  }
+                  if (
+                    item.type === "function_call" ||
+                    item.type === "local_shell_call"
+                  ) {
+                    // Track outstanding tool call so we can abort later if needed.
+                    // The item comes from the streaming response, therefore it has
+                    // either `id` (chat) or `call_id` (responses) – we normalise
+                    // by reading both.
+                    const callId =
+                      (item as { call_id?: string; id?: string }).call_id ??
+                      (item as { id?: string }).id;
+                    if (callId) {
+                      this.pendingAborts.add(callId);
+                    }
+                  } else {
                     stageItem(item as ResponseItem);
                   }
                 }
-                if (
-                  event.response.status === "completed" ||
-                  (event.response.status as unknown as string) ===
-                    "requires_action"
-                ) {
-                  // TODO: remove this once we can depend on streaming events
-                  newTurnInput = await this.processEventsWithoutStreaming(
-                    event.response.output,
-                    stageItem,
-                  );
 
-                  // When we do not use server‑side storage we maintain our
-                  // own transcript so that *future* turns still contain full
-                  // conversational context. However, whether we advance to
-                  // another loop iteration should depend solely on the
-                  // presence of *new* input items (i.e. items that were not
-                  // part of the previous request). Re‑sending the transcript
-                  // by itself would create an infinite request loop because
-                  // `turnInput.length` would never reach zero.
-
-                  if (this.disableResponseStorage) {
-                    // 1) Append the freshly emitted output to our local
-                    //    transcript (minus non‑message items the model does
-                    //    not need to see again).
-                    const cleaned = filterToApiMessages(
-                      event.response.output.map(stripInternalFields),
-                    );
-                    this.transcript.push(...cleaned);
-
-                    // 2) Determine the *delta* (newTurnInput) that must be
-                    //    sent in the next iteration. If there is none we can
-                    //    safely terminate the loop – the transcript alone
-                    //    does not constitute new information for the
-                    //    assistant to act upon.
-
-                    const delta = filterToApiMessages(
-                      newTurnInput.map(stripInternalFields),
-                    );
-
-                    if (delta.length === 0) {
-                      // No new input => end conversation.
-                      newTurnInput = [];
-                    } else {
-                      // Re‑send full transcript *plus* the new delta so the
-                      // stateless backend receives complete context.
-                      newTurnInput = [...this.transcript, ...delta];
-                      // The prefix ends at the current transcript length –
-                      // everything after this index is new for the next
-                      // iteration.
-                      transcriptPrefixLen = this.transcript.length;
+                if (event.type === "response.completed") {
+                  if (thisGeneration === this.generation && !this.canceled) {
+                    for (const item of event.response.output) {
+                      stageItem(item as ResponseItem);
                     }
                   }
+                  if (
+                    event.response.status === "completed" ||
+                    (event.response.status as unknown as string) ===
+                      "requires_action"
+                  ) {
+                    // TODO: remove this once we can depend on streaming events
+                    newTurnInput = await this.processEventsWithoutStreaming(
+                      event.response.output,
+                      stageItem,
+                    );
+
+                    // When we do not use server‑side storage we maintain our
+                    // own transcript so that *future* turns still contain full
+                    // conversational context. However, whether we advance to
+                    // another loop iteration should depend solely on the
+                    // presence of *new* input items (i.e. items that were not
+                    // part of the previous request). Re‑sending the transcript
+                    // by itself would create an infinite request loop because
+                    // `turnInput.length` would never reach zero.
+
+                    if (this.disableResponseStorage) {
+                      // 1) Append the freshly emitted output to our local
+                      //    transcript (minus non‑message items the model does
+                      //    not need to see again).
+                      const cleaned = filterToApiMessages(
+                        event.response.output.map(stripInternalFields),
+                      );
+                      this.transcript.push(...cleaned);
+
+                      // 2) Determine the *delta* (newTurnInput) that must be
+                      //    sent in the next iteration. If there is none we can
+                      //    safely terminate the loop – the transcript alone
+                      //    does not constitute new information for the
+                      //    assistant to act upon.
+
+                      const delta = filterToApiMessages(
+                        newTurnInput.map(stripInternalFields),
+                      );
+
+                      if (delta.length === 0) {
+                        // No new input => end conversation.
+                        newTurnInput = [];
+                      } else {
+                        // Re‑send full transcript *plus* the new delta so the
+                        // stateless backend receives complete context.
+                        newTurnInput = [...this.transcript, ...delta];
+                        // The prefix ends at the current transcript length –
+                        // everything after this index is new for the next
+                        // iteration.
+                        transcriptPrefixLen = this.transcript.length;
+                      }
+                    }
+                  }
+                  lastResponseId = event.response.id;
+                  this.onLastResponseId(event.response.id);
                 }
-                lastResponseId = event.response.id;
-                this.onLastResponseId(event.response.id);
               }
+
+              // Set after we have consumed all stream events in case the stream wasn't
+              // complete or we missed events for whatever reason. That way, we will set
+              // the next turn to an empty array to prevent an infinite loop.
+              // And don't update the turn input too early otherwise we won't have the
+              // current turn inputs available for retries.
+              turnInput = newTurnInput;
+
+              // Stream finished successfully – leave the retry loop.
+              break;
+            } finally {
+              // Always clear the stream timeout check
+              clearInterval(streamTimeoutCheck);
             }
-
-            // Set after we have consumed all stream events in case the stream wasn't
-            // complete or we missed events for whatever reason. That way, we will set
-            // the next turn to an empty array to prevent an infinite loop.
-            // And don't update the turn input too early otherwise we won't have the
-            // current turn inputs available for retries.
-            turnInput = newTurnInput;
-
-            // Stream finished successfully – leave the retry loop.
-            break;
           } catch (err: unknown) {
             const isRateLimitError = (e: unknown): boolean => {
               if (!e || typeof e !== "object") {
@@ -1657,6 +1734,17 @@ export class AgentLoop {
 
       // Re‑throw all other errors so upstream handlers can decide what to do.
       throw err;
+    } finally {
+      // Always clear the global timeout
+      clearTimeout(globalTimeout);
+
+      // Clear memory leaks - reset accumulated state if it grows too large
+      if (alreadyStagedItemIds.size > 1000) {
+        alreadyStagedItemIds.clear();
+      }
+      if (alreadyProcessedResponses.size > 1000) {
+        alreadyProcessedResponses.clear();
+      }
     }
   }
 
@@ -1673,27 +1761,83 @@ export class AgentLoop {
       return [];
     }
     const turnInput: Array<ResponseInputItem> = [];
+
+    // Process tool calls with better error handling
     for (const item of output) {
-      if (item.type === "function_call") {
-        if (alreadyProcessedResponses.has(item.id)) {
-          continue;
-        }
-        alreadyProcessedResponses.add(item.id);
-        // eslint-disable-next-line no-await-in-loop
-        const result = await this.handleFunctionCall(item);
-        turnInput.push(...result);
-        //@ts-expect-error - waiting on sdk
-      } else if (item.type === "local_shell_call") {
-        //@ts-expect-error - waiting on sdk
-        if (alreadyProcessedResponses.has(item.id)) {
-          continue;
-        }
-        //@ts-expect-error - waiting on sdk
-        alreadyProcessedResponses.add(item.id);
-        // eslint-disable-next-line no-await-in-loop
-        const result = await this.handleLocalShellCall(item);
-        turnInput.push(...result);
+      // Check cancellation before each tool execution
+      if (this.canceled || this.hardAbort.signal.aborted) {
+        log("Aborting tool processing due to cancellation");
+        break;
       }
+
+      try {
+        if (item.type === "function_call") {
+          if (alreadyProcessedResponses.has(item.id)) {
+            continue;
+          }
+          alreadyProcessedResponses.add(item.id);
+
+          // Add timeout for tool execution
+          const TOOL_TIMEOUT_MS = 60000; // 1 minute per tool
+          const timeoutPromise = new Promise<Array<ResponseInputItem>>(
+            (_, reject) => {
+              setTimeout(
+                () => reject(new Error("Tool execution timed out")),
+                TOOL_TIMEOUT_MS,
+              );
+            },
+          );
+
+          // eslint-disable-next-line no-await-in-loop
+          const result = await Promise.race([
+            this.handleFunctionCall(item),
+            timeoutPromise,
+          ]);
+          turnInput.push(...result);
+          //@ts-expect-error - waiting on sdk
+        } else if (item.type === "local_shell_call") {
+          //@ts-expect-error - waiting on sdk
+          if (alreadyProcessedResponses.has(item.id)) {
+            continue;
+          }
+          //@ts-expect-error - waiting on sdk
+          alreadyProcessedResponses.add(item.id);
+
+          // Add timeout for shell execution
+          const SHELL_TIMEOUT_MS = 60000; // 1 minute
+          const timeoutPromise = new Promise<Array<ResponseInputItem>>(
+            (_, reject) => {
+              setTimeout(
+                () => reject(new Error("Shell execution timed out")),
+                SHELL_TIMEOUT_MS,
+              );
+            },
+          );
+
+          // eslint-disable-next-line no-await-in-loop
+          const result = await Promise.race([
+            this.handleLocalShellCall(item),
+            timeoutPromise,
+          ]);
+          turnInput.push(...result);
+        }
+      } catch (error) {
+        log(`Tool execution error: ${error}`);
+        // Create error output for failed tool
+        const errorOutput: ResponseInputItem.FunctionCallOutput = {
+          type: "function_call_output",
+          call_id:
+            (item as { call_id?: string; id?: string }).call_id ||
+            (item as { id?: string }).id ||
+            "unknown",
+          output: JSON.stringify({
+            error: error instanceof Error ? error.message : String(error),
+            metadata: { exit_code: 1, duration_seconds: 0 },
+          }),
+        };
+        turnInput.push(errorOutput);
+      }
+
       emitItem(item as ResponseItem);
     }
     return turnInput;
@@ -1714,8 +1858,9 @@ if (spawnSync("rg", ["--version"], { stdio: "ignore" }).status === 0) {
 }
 const dynamicPrefix = dynamicLines.join("\n");
 
-
-const prefix = LOG_ANALYZER_SYSTEM_PROMPT + `
+const prefix =
+  LOG_ANALYZER_SYSTEM_PROMPT +
+  `
 
 ${dynamicPrefix}`;
 
