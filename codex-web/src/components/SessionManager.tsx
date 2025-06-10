@@ -19,7 +19,7 @@ export function SessionManager({ socket }: SessionManagerProps) {
     socket.emit('start_session', {
       config: {
         provider: 'openai',
-        model: 'o4-mini',
+        model: 'o3',
         approvalMode: 'suggest'
       }
     })

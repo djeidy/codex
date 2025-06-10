@@ -1,124 +1,203 @@
-# MTR Log Analyzer Web UI
+# Codex Web - Standalone AI Assistant
 
-A modern web-based user interface for the MTR Log Analyzer, providing a ChatGPT-like experience with real-time progress visualization and interactive approval workflows.
+A standalone web application for AI-powered log analysis, troubleshooting, and code assistance. This project provides a complete web-based interface with its own backend server, no longer requiring codex-cli.
 
 ## Features
 
-- 🎯 **Chat Interface**: Conversational UI similar to ChatGPT
-- ⚡ **Real-time Updates**: Live streaming responses and tool execution status
-- 🔒 **Approval Workflows**: Interactive approval cards for commands with risk assessment
+- 🤖 **AI-powered Assistance**: Integrated OpenAI API for intelligent responses
 - 📁 **Session Management**: Create, resume, and manage multiple chat sessions
-- 🎨 **Modern Design**: Clean, responsive UI with dark mode support
-- 🛠️ **Tool Visualization**: See what tools the AI is using in real-time
+- 📚 **Troubleshooting Guides**: TSG system for structured documentation
+- 💬 **Real-time Chat**: Streaming responses with WebSocket communication
+- 🛠️ **Tool Execution**: Safe file operations and command execution
+- 🔒 **Security Controls**: Path validation and command safety checks
+- 🎨 **Modern UI**: Clean interface with light/dark theme support
+- ⚡ **Live Updates**: Real-time tool execution visualization
 
-## Getting Started
+## Prerequisites
 
-### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- OpenAI API key
 
-- Node.js 22+ 
-- pnpm 9+
-- The MTR CLI must be built first
+## Installation
 
-### Installation
-
-From the root directory:
-
+1. Clone the repository:
 ```bash
-# Install all dependencies
-pnpm install
-
-# Build the CLI (required for web server)
-pnpm build:cli
+git clone <repository-url>
+cd codex-web
 ```
 
-### Running the Web UI
-
-There are two ways to run the web UI:
-
-#### Option 1: Using the run script (recommended)
-
+2. Install dependencies:
 ```bash
-./run-web-ui.sh
+npm install
 ```
 
-This will:
-- Start the MTR web server on port 3001
-- Start the React development server on port 3000
-- Open http://localhost:3000 in your browser
+3. Create a `.env` file based on `.env.example`:
+```bash
+cp .env.example .env
+```
 
-#### Option 2: Manual startup
+4. Edit `.env` and add your OpenAI API key:
+```env
+OPENAI_API_KEY=your-openai-api-key-here
+```
 
-In separate terminals:
+## Development
+
+Run both the backend server and frontend development server:
 
 ```bash
-# Terminal 1: Start the web server
-codex-cli/bin/mtr.js --web-server
+npm run dev
+```
 
-# Terminal 2: Start the React dev server
-cd codex-web && pnpm dev
+This will start:
+- Backend server on http://localhost:3001
+- Frontend dev server on http://localhost:3002
+
+### Running separately
+
+Backend only:
+```bash
+npm run server:dev
+```
+
+Frontend only:
+```bash
+npm run client:dev
+```
+
+## Production Build
+
+1. Build the project:
+```bash
+npm run build
+```
+
+2. Start the production server:
+```bash
+npm start
+```
+
+The server will serve both the API and the static frontend files on port 3001.
+
+## Configuration
+
+### Environment Variables
+
+- `NODE_ENV` - Environment mode (development/production)
+- `PORT` - Backend server port (default: 3001)
+- `OPENAI_API_KEY` - Your OpenAI API key
+- `OPENAI_BASE_URL` - Custom OpenAI base URL (optional)
+- `LOG_TO_FILE` - Enable file logging (true/false)
+- `LOG_LEVEL` - Logging level (DEBUG/INFO/WARN/ERROR)
+- `WEB_UI_URL` - Frontend URL for CORS configuration
+
+### Frontend Configuration
+
+To connect to a different backend URL in production, set the `VITE_API_URL` environment variable during build:
+
+```bash
+VITE_API_URL=https://your-backend-url npm run build:client
 ```
 
 ## Architecture
 
-The web UI consists of:
+### Backend Structure
 
-1. **Backend (Web Server)**: Socket.io server integrated into the CLI that bridges the web UI with the existing agent system
-2. **Frontend (React App)**: Modern React application with real-time WebSocket communication
+```
+server/
+├── index.ts              # Main server entry point
+├── ai/                   # AI agent and tools
+│   ├── agent-loop.ts     # Core AI agent logic
+│   └── tools/            # Tool implementations
+├── core/                 # Core business logic
+│   └── session-manager.ts
+├── storage/              # Data persistence
+│   ├── session-files.ts
+│   ├── session-storage.ts
+│   └── tsg-storage.ts
+├── websocket/            # WebSocket handlers
+│   └── websocket-handler.ts
+├── types/                # TypeScript types
+└── utils/                # Utilities
+```
+
+### Frontend Structure
+
+```
+src/
+├── App.tsx               # Main React component
+├── components/           # React components
+│   ├── ChatView.tsx      # Main chat interface
+│   ├── SessionManager.tsx # Session management
+│   └── ...
+├── hooks/                # Custom React hooks
+├── store/                # State management (Zustand)
+└── utils/                # Utility functions
+```
 
 ### Technology Stack
 
+- **Backend**: Node.js, Express, Socket.io, OpenAI SDK
 - **Frontend**: React 18, TypeScript, Vite, Tailwind CSS, Zustand
 - **Real-time**: Socket.io for bidirectional communication
 - **UI Components**: Radix UI for accessible components
 - **Code Editor**: Monaco Editor (VS Code's editor)
 - **Terminal**: xterm.js for terminal emulation
 
-## Development
+## API Documentation
 
-### Project Structure
+The backend provides a Socket.io API with the following events:
 
-```
-codex-web/
-├── src/
-│   ├── components/      # React components
-│   ├── store/          # Zustand state management
-│   ├── utils/          # Utility functions
-│   └── styles/         # CSS files
-├── public/             # Static assets
-└── package.json
-```
+### Client → Server
 
-### Available Scripts
+- `start_session` - Initialize a new session
+- `user_input` - Send user message
+- `approval_response` - Respond to command approval
+- `cancel` - Cancel current operation
+- `resume_session` - Resume an existing session
+- `tsg:create` - Create a new TSG
+- `tsg:list` - List available TSGs
+- `tsg:select` - Select active TSG
+- `tsg:delete` - Delete a TSG
+- `tsg:upload` - Upload files to TSG
+- `session:upload` - Upload session files
+- `session:file:*` - File management operations
 
-```bash
-# Development server
-pnpm dev
+### Server → Client
 
-# Build for production
-pnpm build
+- `session_created` - Session initialized
+- `session_resumed` - Session resumed
+- `agent_event` - AI agent updates (messages, tool calls, results)
+- `approval_request` - Request command approval
+- `error` - Error messages
+- `message` - General messages and responses
 
-# Type checking
-pnpm typecheck
+## Security Notes
 
-# Linting
-pnpm lint
-```
+- File operations are restricted to safe paths
+- Command execution includes basic safety checks
+- Sensitive file patterns are blocked
+- All operations require session context
+- Network access is disabled for executed commands
 
-## Configuration
+## Migration from codex-cli
 
-The web UI connects to the backend on `http://localhost:3001` by default. This can be configured in:
-- `vite.config.ts` - Proxy configuration for development
-- Environment variables (coming soon)
+This standalone version includes all the functionality previously provided by codex-cli's web server:
 
-## Roadmap
+1. **Session Management**: Full session persistence and management
+2. **AI Integration**: Direct OpenAI API integration
+3. **Tool Execution**: Safe command and file operations
+4. **TSG System**: Complete troubleshooting guide functionality
+5. **File Management**: Upload and analyze session files
 
-- [ ] Monaco Editor integration for code editing
-- [ ] xterm.js integration for terminal emulation
-- [ ] File tree navigation
-- [ ] Multi-provider support UI
-- [ ] Collaborative sessions
-- [ ] Metrics dashboard
-- [ ] Plugin system
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Create a Pull Request
 
 ## License
 

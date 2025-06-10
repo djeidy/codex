@@ -48,8 +48,8 @@ function App() {
 
   useEffect(() => {
     // Connect to the backend
-    // In development, connect through the Vite proxy
-    const socketUrl = import.meta.env.DEV ? '' : 'http://localhost:3001'
+    // Use environment variable or default to localhost:3001
+    const socketUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001'
     const socketInstance = io(socketUrl, {
       reconnection: true,
       reconnectionDelay: 1000,

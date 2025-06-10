@@ -9,8 +9,22 @@ lerna-debug.log*
 
 node_modules
 dist
+dist-server
 dist-ssr
 *.local
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Data directories
+data/sessions/*
+data/tsgs/*
+!data/sessions/.gitkeep
+!data/tsgs/.gitkeep
 
 # Editor directories and files
 .vscode/*

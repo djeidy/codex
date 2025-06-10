@@ -93,10 +93,12 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
               <div>
                 <label className="block text-sm font-medium mb-2">Model</label>
                 <select
-                  value={config.model || 'gpt-4'}
+                  value={config.model || 'o3'}
                   onChange={(e) => updateConfig({ model: e.target.value })}
                   className="w-full p-2 border rounded dark:bg-gray-700 dark:border-gray-600"
                 >
+                  <option value="o3">o3</option>
+                  <option value="o4-mini">o4 Mini</option>
                   <option value="gpt-4">GPT-4</option>
                   <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
                   <option value="claude-2">Claude 2</option>
