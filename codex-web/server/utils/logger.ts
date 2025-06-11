@@ -20,7 +20,7 @@ class Logger {
 
   constructor() {
     if (this.logToFile) {
-      const logDir = path.join(__dirname, '../../../logs');
+      const logDir = path.join(__dirname, '../../data/logs');
       const logFile = path.join(logDir, `codex-web-${new Date().toISOString().split('T')[0]}.log`);
       
       // Create logs directory if it doesn't exist

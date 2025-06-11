@@ -7,7 +7,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Base directory for TSG storage
-const TSG_STORAGE_DIR = path.join(__dirname, '../../../data/tsgs');
+const TSG_STORAGE_DIR = path.join(__dirname, '../../data/tsgs');
 
 interface TSGFile {
   path: string;

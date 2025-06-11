@@ -96,6 +96,10 @@ export class WebSocketHandler {
       this.handleTSGMessage(data),
     );
 
+    // Session persistence handlers
+    this.socket.on('session:list', this.handleListSessions.bind(this));
+    this.socket.on('session:load', this.handleLoadSession.bind(this));
+    
     // Session file handlers
     this.socket.on('message', this.handleMessage.bind(this));
 
@@ -115,12 +119,18 @@ export class WebSocketHandler {
       this.currentSession = session;
       const enhancedSession = getEnhancedSession(session.id);
 
+      // Build comprehensive instructions including session context
+      const sessionContext = this.buildSessionContext(session.id);
+      const fullInstructions = sessionContext.length > 0 
+        ? 'You are a helpful AI assistant specializing in log analysis and troubleshooting.\n\n' + sessionContext
+        : 'You are a helpful AI assistant specializing in log analysis and troubleshooting.';
+
       // Initialize AgentLoop
       this.agentLoop = new AgentLoop({
         model: session.config.model,
         provider: session.config.provider,
         config: session.config,
-        instructions: this.buildSessionContext(session.id),
+        instructions: fullInstructions,
         approvalPolicy: (session.config.approvalMode || 'suggest') as ApprovalPolicy,
         sessionId: session.id,
         activeTSG: enhancedSession.activeTSG,
@@ -152,12 +162,18 @@ export class WebSocketHandler {
       this.currentSession = session;
       const enhancedSession = getEnhancedSession(data.sessionId);
 
+      // Build comprehensive instructions including session context
+      const sessionContext = this.buildSessionContext(data.sessionId);
+      const fullInstructions = sessionContext.length > 0 
+        ? 'You are a helpful AI assistant specializing in log analysis and troubleshooting.\n\n' + sessionContext
+        : 'You are a helpful AI assistant specializing in log analysis and troubleshooting.';
+
       // Re-initialize AgentLoop
       this.agentLoop = new AgentLoop({
         model: session.config.model,
         provider: session.config.provider,
         config: session.config,
-        instructions: this.buildSessionContext(data.sessionId),
+        instructions: fullInstructions,
         approvalPolicy: (session.config.approvalMode || 'suggest') as ApprovalPolicy,
         sessionId: session.id,
         activeTSG: enhancedSession.activeTSG,
@@ -166,11 +182,22 @@ export class WebSocketHandler {
         onToolResult: this.handleToolResult.bind(this),
         getCommandConfirmation: this.handleCommandConfirmation.bind(this),
       });
+      
+      // Restore message history to agent
+      if (session.messages.length > 0) {
+        const agentMessages = session.messages.map(msg => ({
+          role: msg.role as 'user' | 'assistant' | 'system',
+          content: msg.content
+        }));
+        this.agentLoop.restoreMessages(agentMessages);
+      }
 
       this.socket.emit('session_resumed', {
         sessionId: session.id,
         messages: session.messages,
         config: session.config,
+        agentActivity: session.agentActivity || [],
+        toolExecutions: session.toolExecutions || []
       });
     } catch (error) {
       this.handleError(error);
@@ -243,21 +270,31 @@ export class WebSocketHandler {
 
   private buildSessionContext(sessionId: string): string {
     const enhancedSession = getEnhancedSession(sessionId);
-    let context = 'You are a helpful AI assistant specializing in log analysis and troubleshooting.\n\n';
+    let context = '';
+
+    // TSG context takes priority
+    if (enhancedSession.activeTSG) {
+      context += `## CRITICAL: Active Troubleshooting Guide\n`;
+      context += `The user has selected the "${enhancedSession.activeTSG}" TSG for this session.\n`;
+      context += `**ACTION REQUIRED**: Start by reading this TSG using read_tsg("${enhancedSession.activeTSG}") to understand the troubleshooting methodology.\n`;
+      context += `Follow the TSG steps systematically and refer back to it as needed.\n\n`;
+    }
 
     if (enhancedSession.uploadedFiles.length > 0) {
-      context += `## Session Files (${enhancedSession.uploadedFiles.length} files)\n`;
+      context += `## Session Files Uploaded (${enhancedSession.uploadedFiles.length} files)\n`;
       context += 'The following files have been uploaded for analysis:\n';
       for (const file of enhancedSession.uploadedFiles) {
         context += `- ${file.name} (${file.type}, ${(file.size / 1024).toFixed(1)}KB)\n`;
       }
-      context += '\nIMPORTANT: Use the analyze_session_files tool to analyze these uploaded files. ';
-      context += 'Do not try to find files using list_files - the uploaded files are available through analyze_session_files.\n\n';
+      context += '\n**ACTION REQUIRED**: Analyze these files using analyze_session_files([])\n';
+      context += 'Note: Pass an empty array to analyze all uploaded files.\n\n';
     }
 
-    if (enhancedSession.activeTSG) {
-      context += `## Active Troubleshooting Guide\n`;
-      context += `The user has selected the "${enhancedSession.activeTSG}" TSG.\n\n`;
+    if (enhancedSession.activeTSG && enhancedSession.uploadedFiles.length > 0) {
+      context += '## Recommended Workflow\n';
+      context += '1. First, read the TSG to understand the troubleshooting approach\n';
+      context += '2. Then, analyze the uploaded files looking for patterns mentioned in the TSG\n';
+      context += '3. Follow the TSG steps using insights from the file analysis\n\n';
     }
 
     return context;
@@ -305,12 +342,27 @@ export class WebSocketHandler {
       if (chunk.isComplete) {
         // Save the complete assistant message to the session
         if (this.currentSession && accumulatedContent) {
+          const now = new Date();
           this.currentSession.messages.push({
             id: messageId,
             role: 'assistant',
             content: accumulatedContent,
-            timestamp: new Date()
+            timestamp: now
           });
+          
+          // Track agent activity
+          if (!this.currentSession.agentActivity) {
+            this.currentSession.agentActivity = [];
+          }
+          this.currentSession.agentActivity.push({
+            id: messageId,
+            timestamp: now,
+            type: 'content',
+            data: { content: accumulatedContent }
+          });
+          
+          // Save session with new message
+          this.sessionManager.updateSession(this.currentSession);
         }
         
         this.streamingMessages.delete(messageId);
@@ -320,6 +372,34 @@ export class WebSocketHandler {
   }
 
   private handleToolCall(toolCall: any): void {
+    // Track tool execution in session
+    if (this.currentSession) {
+      if (!this.currentSession.toolExecutions) {
+        this.currentSession.toolExecutions = [];
+      }
+      this.currentSession.toolExecutions.push({
+        id: toolCall.id,
+        name: toolCall.name,
+        arguments: toolCall.arguments,
+        result: null,
+        timestamp: new Date()
+      });
+      
+      if (!this.currentSession.agentActivity) {
+        this.currentSession.agentActivity = [];
+      }
+      this.currentSession.agentActivity.push({
+        id: toolCall.id,
+        timestamp: new Date(),
+        type: 'tool_execution',
+        data: {
+          name: toolCall.name,
+          arguments: toolCall.arguments,
+          status: 'running'
+        }
+      });
+    }
+    
     this.socket.emit('agent_event', {
       type: 'tool_execution',
       data: {
@@ -333,6 +413,17 @@ export class WebSocketHandler {
   }
 
   private handleToolResult(result: any): void {
+    // Update tool execution result in session
+    if (this.currentSession && this.currentSession.toolExecutions) {
+      const toolExec = this.currentSession.toolExecutions.find(t => t.id === result.id);
+      if (toolExec) {
+        toolExec.result = result.result;
+      }
+      
+      // Save session with updated tool results
+      this.sessionManager.updateSession(this.currentSession);
+    }
+    
     this.socket.emit('agent_event', {
       type: 'tool_result',
       data: {
@@ -400,6 +491,39 @@ export class WebSocketHandler {
       this.agentLoop.cancel();
     }
     this.pendingApprovals.clear();
+  }
+  
+  private async handleListSessions(): Promise<void> {
+    try {
+      const sessions = await this.sessionManager.listAvailableSessions();
+      this.socket.emit('session:list:response', {
+        sessions
+      });
+    } catch (error) {
+      this.handleError(error);
+    }
+  }
+  
+  private async handleLoadSession(data: { sessionId: string }): Promise<void> {
+    try {
+      const session = await this.sessionManager.getSession(data.sessionId);
+      if (!session) {
+        throw new Error('Session not found');
+      }
+      
+      // Return session details including messages and activity
+      this.socket.emit('session:load:response', {
+        sessionId: session.id,
+        messages: session.messages,
+        config: session.config,
+        agentActivity: session.agentActivity || [],
+        toolExecutions: session.toolExecutions || [],
+        createdAt: session.createdAt,
+        lastActivity: session.lastActivity
+      });
+    } catch (error) {
+      this.handleError(error);
+    }
   }
 
   private async handleTSGMessage(message: TSGMessage): Promise<void> {
@@ -490,10 +614,33 @@ export class WebSocketHandler {
       data: { activeTSG: name },
     });
 
-    // Trigger automatic TSG reading
-    if (this.agentLoop && this.currentSession && name) {
-      const systemMessage = `The user has selected the "${name}" TSG. Please read its index or table of contents to understand its structure.`;
-      await this.agentLoop.run(systemMessage);
+    // Update the existing agent loop with new TSG context
+    if (this.agentLoop && this.currentSession) {
+      // Update agent's TSG configuration
+      this.agentLoop.updateTSG(name);
+      
+      // Rebuild instructions with the new TSG context
+      const sessionContext = this.buildSessionContext(sessionId);
+      const fullInstructions = sessionContext.length > 0 
+        ? 'You are a helpful AI assistant specializing in log analysis and troubleshooting.\n\n' + sessionContext
+        : 'You are a helpful AI assistant specializing in log analysis and troubleshooting.';
+      this.agentLoop.params.instructions = fullInstructions;
+      
+      // Notify the user and instruct agent to read TSG
+      if (name) {
+        const tsgNotification = `A TSG has been selected: "${name}". I'll read it now to understand the troubleshooting methodology.`;
+        this.socket.emit('message', {
+          type: 'agent:content',
+          data: {
+            content: tsgNotification,
+            messageId: `msg_${Date.now()}_tsg_notify`
+          }
+        });
+        
+        // Trigger automatic TSG reading with explicit instruction
+        const systemMessage = `IMPORTANT: The user has selected the "${name}" TSG for this troubleshooting session. You MUST read this TSG first using read_tsg("${name}") to understand the troubleshooting methodology before doing anything else. This is required to properly assist the user.`;
+        await this.agentLoop.run(systemMessage);
+      }
     }
   }
 
@@ -600,11 +747,14 @@ export class WebSocketHandler {
 
     const session = await this.sessionManager.getSession(sessionId);
     if (session && (await shouldAutoAnalyze(session, newFiles))) {
+      // Get the latest enhanced session to ensure we have the active TSG
+      const latestEnhancedSession = getEnhancedSession(sessionId);
+      
       // Send auto-analysis trigger
       this.socket.emit('message', {
         type: 'auto-analysis:trigger',
         data: {
-          message: generateAutoAnalysisMessage(newFiles),
+          message: generateAutoAnalysisMessage(newFiles, latestEnhancedSession.activeTSG),
           files: newFiles.map((f) => f.name),
         },
       });

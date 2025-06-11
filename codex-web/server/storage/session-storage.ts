@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Base directory for session file storage
-const SESSION_STORAGE_DIR = path.join(__dirname, '../../../data/sessions');
+const SESSION_STORAGE_DIR = path.join(__dirname, '../../data/sessions');
 
 // Ensure storage directory exists
 async function ensureStorageDir(sessionId: string): Promise<string> {

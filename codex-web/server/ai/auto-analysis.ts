@@ -44,9 +44,19 @@ export async function shouldAutoAnalyze(
   return eligibleFiles.length > 0;
 }
 
-export function generateAutoAnalysisMessage(files: Array<SessionFile>): string {
+export function generateAutoAnalysisMessage(files: Array<SessionFile>, activeTSG?: string | null): string {
   const fileList = files.map(f => `- ${f.name} (${f.type})`).join('\n');
   
-  return `I see you've uploaded the following log files:\n${fileList}\n\n` +
-         `Please analyze all uploaded session files to identify any issues or patterns.`;
+  let message = `I see you've uploaded the following log files:\n${fileList}\n\n`;
+  
+  if (activeTSG) {
+    message += `Since the "${activeTSG}" TSG is active, please:\n` +
+               `1. First read the TSG using read_tsg("${activeTSG}")\n` +
+               `2. Then analyze the uploaded files looking for patterns mentioned in the TSG\n` +
+               `3. Follow the TSG troubleshooting steps based on your findings`;
+  } else {
+    message += `Please analyze all uploaded session files to identify any issues or patterns.`;
+  }
+  
+  return message;
 }

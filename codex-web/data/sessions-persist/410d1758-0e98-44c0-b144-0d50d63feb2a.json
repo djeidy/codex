@@ -1,0 +1,1031 @@
+{
+  "id": "410d1758-0e98-44c0-b144-0d50d63feb2a",
+  "socketId": "b2iFd_fCZ3F9COPRAAAC",
+  "config": {
+    "provider": "openai",
+    "model": "o3",
+    "approvalMode": "suggest"
+  },
+  "messages": [
+    {
+      "id": "c35f7a06-9e75-405f-8dde-058e9147ad22",
+      "role": "user",
+      "content": "Investigate the log and then answer this. How many calls happenned in this log? Can you provider their call id, their start time, their end time, and how many participants were in them?",
+      "timestamp": "2025-06-11T04:34:15.562Z"
+    },
+    {
+      "id": "msg_1749616810919_ikgi2x7sm",
+      "role": "assistant",
+      "content": "I found six distinct calls in the log.  \nFor every call I took  \n\n• the first time-stamp where the callId appears as the start time  \n• the last “ExtendedCallState … 6 ⇒ 7” (or equivalent final state) entry as the end time  \n• the number of “participant added for call <callId> …” lines as a quick way to gauge how many other people actually joined that call (duplicates removed).\n\nResult\n\n1. Call-ID 3966e411-9657-496d-ade1-dcf5ba72757c  \n   – Start : 06/05/2025 10 : 04 : 36.585  \n   – End   : 06/05/2025 10 : 43 : 54.677  \n   – Participants seen : 1  \n\n2. Call-ID 3c72d4a8-f741-46af-9384-332efcc0d069  \n   – Start : 06/05/2025 11 : 31 : 23.241  \n   – End   : 06/05/2025 12 : 22 : 33.473  \n   – Participants seen : 3  \n\n3. Call-ID 0941cbfa-e71f-42a7-b502-93fb7dee41a7  \n   – Start : 06/05/2025 14 : 08 : 09.750  \n   – End   : 06/05/2025 14 : 08 : 19.537  \n   – Participants seen : 1  \n\n4. Call-ID 02bbec84-414e-4336-b96f-6f9dac635de4  \n   – Start : 06/05/2025 14 : 08 : 10.527  \n   – End   : 06/05/2025 14 : 08 : 11.151  \n   – Participants seen : 0 (no remote user joined – likely an internal probe/test call)  \n\n5. Call-ID b02d6b8c-cec6-409c-8b29-42e203888e20  \n   – Start : 06/05/2025 14 : 08 : 16.220  \n   – End   : 06/05/2025 14 : 08 : 16.380  \n   – Participants seen : 0 (very short-lived)  \n\n6. Call-ID c7dfbe52-3626-49ab-97bf-7fea01f6f872  \n   – Start : 06/05/2025 14 : 08 : 25.350  \n   – End   : 06/05/2025 14 : 08 : 35.806  \n   – Participants seen : 0 (no “participant added” lines for this call)\n\nSummary: 6 calls were recorded in the log with the details shown above.",
+      "timestamp": "2025-06-11T04:40:52.795Z"
+    }
+  ],
+  "createdAt": "2025-06-11T04:33:30.611Z",
+  "lastActivity": "2025-06-11T04:40:52.795Z",
+  "uploadedFiles": [],
+  "activeTSG": null,
+  "sessionMetadata": {
+    "createdAt": "2025-06-11T04:33:30.611Z",
+    "lastActivity": "2025-06-11T04:40:52.795Z",
+    "fileUploadCount": 0,
+    "totalUploadSize": 0
+  },
+  "agentActivity": [
+    {
+      "id": "call_pwwe4VNPtwpReODA7k5NxvqN",
+      "timestamp": "2025-06-11T04:34:17.781Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": []
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_tV9sjKCGV5Qmyes2gTtvXQc2",
+      "timestamp": "2025-06-11T04:34:19.822Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "Call"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_dNRCnJTqAZcZTjwnGavSIIbX",
+      "timestamp": "2025-06-11T04:34:22.190Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "CallId"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_iSpgqYrIzU45tJQbMUC72g6r",
+      "timestamp": "2025-06-11T04:34:29.542Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "participant added"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_TUikNNZQYwjRcnhsfLd6Px5s",
+      "timestamp": "2025-06-11T04:34:33.994Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "call ended"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_j9FjPc2C1zFESBeBflT8stdX",
+      "timestamp": "2025-06-11T04:34:38.835Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "Participant added for call"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_BuhsZVEzz5cUR3jmLiv4HLdg",
+      "timestamp": "2025-06-11T04:34:44.478Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "3966e411"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_RK7sTsMVZESrVEqYMX02TO6S",
+      "timestamp": "2025-06-11T04:34:55.495Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "3c72d4a8-f741-46af-9384-332efcc0d069"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_v0bgfEMisdTDb6QT4j7IaYZG",
+      "timestamp": "2025-06-11T04:34:56.966Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "0941cbfa-e71f-42a7-b502-93fb7dee41a7"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_TF0WMss4GlKs5OSlykhZEcyu",
+      "timestamp": "2025-06-11T04:35:02.042Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "callId="
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_3IC8NE7zNBspO0J0Es6oACQM",
+      "timestamp": "2025-06-11T04:35:08.276Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "createCallAsync.*3966e411"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_PN5xza3xuoOiM7lKGe4M1xoc",
+      "timestamp": "2025-06-11T04:35:14.885Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "3966e411-9657-496d-ade1-dcf5ba72757c"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_8bV6WqmHn3A9mo6opW4SUZ3x",
+      "timestamp": "2025-06-11T04:35:19.491Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "createCallAsync"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_57lwsxWymaHifEvHshhwbqdl",
+      "timestamp": "2025-06-11T04:35:29.321Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "shell",
+        "arguments": {
+          "command": [
+            "bash",
+            "-lc",
+            "grep -n \"Participant added for call\" -i \"zoomed issue.txt\" | head"
+          ]
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_hadkWP79aJceGQG49kxKJu9E",
+      "timestamp": "2025-06-11T04:35:50.225Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "3966e411-9657-496d-ade1-dcf5ba72757c"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_vxcFigop1gIO0wB2coCNHHLI",
+      "timestamp": "2025-06-11T04:35:58.617Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "extendedCallState changed"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_soqOUFV7uJMYkreII2mu3ZHg",
+      "timestamp": "2025-06-11T04:36:05.830Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "c7dfbe52-3626-49ab-97bf-7fea01f6f872"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_c6hqizu8O08l2gGRxJh79i6N",
+      "timestamp": "2025-06-11T04:36:23.479Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "Participant added.*3966e411"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_2FLqCa9oL9hqiBzrN50tTiCe",
+      "timestamp": "2025-06-11T04:36:43.979Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "0941cbfa-e71f-42a7-b502-93fb7dee41a7::"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_EVwQFB8kyHTzDMzTdqxlX46t",
+      "timestamp": "2025-06-11T04:36:57.939Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "callId=3966e411.*undefined"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_TLe0YzzAt3LiafHuzehjilhR",
+      "timestamp": "2025-06-11T04:37:05.796Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "callId=3966e411-9657-496d-ade1-dcf5ba72757c::\""
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_FS4hjsqSA1d0vep7HlYGm9zy",
+      "timestamp": "2025-06-11T04:37:22.849Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "c7dfbe52-3626-49ab-97bf-7fea01f6f872::teamsCallId"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_j58HWHuEradxfTmKjXeA8uQJ",
+      "timestamp": "2025-06-11T04:37:35.963Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "callId=3966e411-9657-496d-ade1-dcf5ba72757c::teamsCallId=4"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_l8jFqZX3WythC46RRlFWd9mn",
+      "timestamp": "2025-06-11T04:38:14.122Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "c7dfbe52.*participant added"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_dICKDoo7D4VEoq7LbIrs38vk",
+      "timestamp": "2025-06-11T04:38:34.193Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "Participant added.*3966e411"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_sM7Ou9pU0o0YmvyQibthdcAp",
+      "timestamp": "2025-06-11T04:38:43.089Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "participant added.*3966e411"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_vIAiXEvLGzvHOLaMpUZh6QzC",
+      "timestamp": "2025-06-11T04:39:06.962Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "participant added.*3c72d4a8"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_KjqbLvaslPZpjULJhH2lNN0n",
+      "timestamp": "2025-06-11T04:39:20.774Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "participant added:.*3966e411"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_L5vZ2wGiYxmrnunuxvBESHYc",
+      "timestamp": "2025-06-11T04:39:37.824Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "callId=3966e411.*undefined"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "call_DAeIu5lqT3Icm1PISdsfFWi5",
+      "timestamp": "2025-06-11T04:40:10.850Z",
+      "type": "tool_execution",
+      "data": {
+        "name": "analyze_session_files",
+        "arguments": {
+          "fileNames": [
+            "zoomed issue.txt"
+          ],
+          "pattern": "participant added: .*teamsCallId=4"
+        },
+        "status": "running"
+      }
+    },
+    {
+      "id": "msg_1749616810919_ikgi2x7sm",
+      "timestamp": "2025-06-11T04:40:52.795Z",
+      "type": "content",
+      "data": {
+        "content": "I found six distinct calls in the log.  \nFor every call I took  \n\n• the first time-stamp where the callId appears as the start time  \n• the last “ExtendedCallState … 6 ⇒ 7” (or equivalent final state) entry as the end time  \n• the number of “participant added for call <callId> …” lines as a quick way to gauge how many other people actually joined that call (duplicates removed).\n\nResult\n\n1. Call-ID 3966e411-9657-496d-ade1-dcf5ba72757c  \n   – Start : 06/05/2025 10 : 04 : 36.585  \n   – End   : 06/05/2025 10 : 43 : 54.677  \n   – Participants seen : 1  \n\n2. Call-ID 3c72d4a8-f741-46af-9384-332efcc0d069  \n   – Start : 06/05/2025 11 : 31 : 23.241  \n   – End   : 06/05/2025 12 : 22 : 33.473  \n   – Participants seen : 3  \n\n3. Call-ID 0941cbfa-e71f-42a7-b502-93fb7dee41a7  \n   – Start : 06/05/2025 14 : 08 : 09.750  \n   – End   : 06/05/2025 14 : 08 : 19.537  \n   – Participants seen : 1  \n\n4. Call-ID 02bbec84-414e-4336-b96f-6f9dac635de4  \n   – Start : 06/05/2025 14 : 08 : 10.527  \n   – End   : 06/05/2025 14 : 08 : 11.151  \n   – Participants seen : 0 (no remote user joined – likely an internal probe/test call)  \n\n5. Call-ID b02d6b8c-cec6-409c-8b29-42e203888e20  \n   – Start : 06/05/2025 14 : 08 : 16.220  \n   – End   : 06/05/2025 14 : 08 : 16.380  \n   – Participants seen : 0 (very short-lived)  \n\n6. Call-ID c7dfbe52-3626-49ab-97bf-7fea01f6f872  \n   – Start : 06/05/2025 14 : 08 : 25.350  \n   – End   : 06/05/2025 14 : 08 : 35.806  \n   – Participants seen : 0 (no “participant added” lines for this call)\n\nSummary: 6 calls were recorded in the log with the details shown above."
+      }
+    }
+  ],
+  "toolExecutions": [
+    {
+      "id": "call_pwwe4VNPtwpReODA7k5NxvqN",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": []
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPotential issues found:\nLine 3: 6/5/2025 02:33:39.362 GMT+8 ,ERROR,[1708][1][RegistryHelper.cs:101:GetRegValue] fail to call OpenSubKey\nLine 197: 6/5/2025 02:33:39.842 GMT+8 ,ERROR,[4692][2][RigelAudioDeviceManager.cs:60:SetDefaultVolumeOnDevice] Communications device Echo Cancelling Speakerphone (2- Jabra Speak 750) not available.\nLine 203: 6/5/2025 02:33:39.842 GMT+8 ,ERROR,[4692][2][RigelAudioDeviceManager.cs:60:SetDefaultVolumeOnDevice] Default device Echo Cancelling Speakerphone (2- Jabra Speak 750) not available.\nLine 241: 6/5/2025 02:33:39.890 GMT+8 ,ERROR,[1708][12][RegistryHelper.cs:96:GetRegValue] name = [PlazaID] is not found\nLine 242: 6/5/2025 02:33:39.890 GMT+8 ,ERROR,[1708][12][RegistryHelper.cs:34:GetRegIntValueInHklm] Valid integer value not found\nLine 592: 6/5/2025 02:33:40.903 GMT+8 ,INFO,[4692][2][PropertyListenerForTeams.cs:293:RegisterListenerForRigelProperty] PropertyListenerForTeams is registering for ThirdPartyClient.MeetingError changes to send to Teams with the name third-party-meeting-error\nLine 593: 6/5/2025 02:33:40.903 GMT+8 ,INFO,[4692][2][PropertyListenerForTeams.cs:305:RegisterListenerForRigelProperty] Successfully registered for ThirdPartyClient.MeetingError changes\nLine 875: 6/5/2025 02:33:40.970 GMT+8 ,ERROR,[4692][2][PropertyListenerForDesktopApiService.cs:380:RegisterListener] RegisterListener could not register RigelAppSettings due to missing a property named TeamsMeetingsEnabled.\nLine 878: 6/5/2025 02:33:40.970 GMT+8 ,ERROR,[4692][2][PropertyListenerForDesktopApiService.cs:380:RegisterListener] RegisterListener could not register RigelAppSettings due to missing a property named TeamsFirstEnabled.\nLine 881: 6/5/2025 02:33:40.977 GMT+8 ,ERROR,[4692][2][PropertyListenerForDesktopApiService.cs:380:RegisterListener] RegisterListener could not register RigelAppSettings due to missing a property named EnableTeams21.\n... and 2073 more potential issues",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 0
+        }
+      },
+      "timestamp": "2025-06-11T04:34:17.781Z"
+    },
+    {
+      "id": "call_tV9sjKCGV5Qmyes2gTtvXQc2",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "Call"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"Call\":\nLine 3: 6/5/2025 02:33:39.362 GMT+8 ,ERROR,[1708][1][RegistryHelper.cs:101:GetRegValue] fail to call OpenSubKey\nLine 16: 6/5/2025 02:33:39.604 GMT+8 ,INFO,[4692][2][DockDetectionManager.cs:704:InitializeNewHidDeviceAsync] Input report callback succesfully registered for Logitech Flare\nLine 34: 6/5/2025 02:33:39.704 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:157:OnBackgroundActivated] OnBackgroundActivated, starting, TaskInstanceId=94ba7198-b9c1-4385-a1b6-44428dff7fab\nLine 36: 6/5/2025 02:33:39.704 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:87:AppState] DesktopAPIServiceAppState=Connected\nLine 37: 6/5/2025 02:33:39.704 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:767:NotifyPropertyChanged] Notify property change for <Microsoft.SkypeTeam.DesktopAPIServiceCallerNS.DesktopAPIServiceCaller>:<AppState>\nLine 39: 6/5/2025 02:33:39.704 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:147:CompleteInitialize] DesktopAPIServiceCaller completed initialization\nLine 41: 6/5/2025 02:33:39.704 GMT+8 ,INFO,[4692][2][LoggingProvider.cs:15:LogInfo] Telemetry event: s4sh_Count. Scenario_Delta = 00:00:00.5820443. Scenario_DeltaTimeInSeconds = 0.5820443. Scenario_Host = hanglung.com. Scenario_Id = ef77394a-131c-4082-a39c-7fe81714b39b. Scenario_Name = AppStory. Scenario_Reason = . Scenario_Status = Success. Scenario_Step = DesktopAPIServiceCaller OnBackgroundActivated Complete. Scenario_TotalTime = 00:00:00.8003631. Scenario_TotalTimeInSeconds = 0.8003631.\nLine 46: 6/5/2025 02:33:39.761 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:1021:ParseResponse] DesktopAPIService call succeeded\nLine 107: 6/5/2025 02:33:39.826 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:326:GetRegIntValueInHklmAsync] Using DesktopAPIService to call GetRegIntValueInHklmAsync\nLine 109: 6/5/2025 02:33:39.826 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:1033:WaitForInitialized] Initialization confirmed\nLine 215: 6/5/2025 02:33:39.842 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:252:GetFiles] Using DesktopAPIService to call GetFiles\nLine 217: 6/5/2025 02:33:39.842 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:1033:WaitForInitialized] Initialization confirmed\nLine 226: 6/5/2025 02:33:39.858 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:1021:ParseResponse] DesktopAPIService call succeeded\nLine 247: 6/5/2025 02:33:39.890 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:1021:ParseResponse] DesktopAPIService call succeeded\nLine 284: 6/5/2025 02:33:39.890 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:252:GetFiles] Using DesktopAPIService to call GetFiles\nLine 286: 6/5/2025 02:33:39.890 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:1033:WaitForInitialized] Initialization confirmed\nLine 287: 6/5/2025 02:33:39.904 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:1021:ParseResponse] DesktopAPIService call succeeded\nLine 293: 6/5/2025 02:33:39.922 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:252:GetFiles] Using DesktopAPIService to call GetFiles\nLine 295: 6/5/2025 02:33:39.922 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:1033:WaitForInitialized] Initialization confirmed\nLine 296: 6/5/2025 02:33:39.922 GMT+8 ,INFO,[4692][2][DesktopAPIServiceCaller.cs:1021:ParseResponse] DesktopAPIService call succeeded\n... and 27399 more matches",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 27419
+        }
+      },
+      "timestamp": "2025-06-11T04:34:19.822Z"
+    },
+    {
+      "id": "call_dNRCnJTqAZcZTjwnGavSIIbX",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "CallId"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"CallId\":\nLine 26151: 6/5/2025 10:05:03.681 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] callingParticipantService: participant removed: 8:orgid:351f2357-dea2-4c94-9ee7-6795c2def1cf, [teamsCallId=4] [callId=3966e411-9657-496d-ade1-dcf5ba72757c]\nLine 26254: 6/5/2025 10:05:04.259 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] videoRenderingHelpers: removeTrackedLayoutStreams key:0ba68bb2-23ec-4de4-bdb6-c560587da57f_video_4_Main_2, streamId:127, participantId:8:orgid:351f2357-dea2-4c94-9ee7-6795c2def1cf, compositorId:0ba68bb2-23ec-4de4-bdb6-c560587da57f_video_4_Main, teamsCallId:4\nLine 26320: 6/5/2025 10:05:14.698 GMT+8  Inf\tCID[0ba68bb2-23ec-4de4-bdb6-c560587da57f] CallingScreenManager: Retrieved call data update for teamsCallId 4. Call state: 3, call id: 4, call isServerMuted: false\nLine 26323: 6/5/2025 10:05:14.698 GMT+8  Inf\tCID[0ba68bb2-23ec-4de4-bdb6-c560587da57f] CallingScreenManager: Call mode for teamsCallId=4 is: 1, intent.id = 11101730-3347-4190-8b4e-ea4062f82c4f, intent.type=Meeting\nLine 26482: [teamsCallId=4][callId=3966e411-9657-496d-ade1-dcf5ba72757c]\nLine 26616: 6/5/2025 10:06:01.518 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] compositorManager: [disposeCompositor] cId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_undefined_content-camera-stream-vid_046d&pid_0876 teamsCallId=null refCount=0 keeping persistent compositor\nLine 26621: 6/5/2025 10:06:01.518 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] compositorManager: [disposeCompositor] cId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_video_4_Main teamsCallId=4 refCount=0 keeping persistent compositor\nLine 26626: 6/5/2025 10:06:01.518 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] compositorManager: [disposeCompositor] cId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_4 teamsCallId=4 refCount=0 keeping persistent compositor\nLine 26682: 6/5/2025 10:06:01.681 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] CallingIntentMultiWindowService: [getTeamsCallFromIntentId] #callpopout all calls info [teamsCallId, intentId]: [[4,\"11101730-3347-4190-8b4e-ea4062f82c4f\"]]\nLine 26688: 6/5/2025 10:06:01.681 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] videoRenderingHelpers: [startPreview] resuming local video [windowId=0ba68bb2-23ec-4de4-bdb6-c560587da57f, intentId=, contextId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_undefined_content-camera-stream-vid_046d&pid_0876_Video_preview_s_content-camera-stream-vid_046d&pid_0876, ignoreMirroring=true, streamType=0, compositorId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_undefined_content-camera-stream-vid_046d&pid_0876, teamsCallId=undefined]\nLine 26692: 6/5/2025 10:06:01.690 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] CallingIntentMultiWindowService: [getTeamsCallFromIntentId] #callpopout all calls info [teamsCallId, intentId]: [[4,\"11101730-3347-4190-8b4e-ea4062f82c4f\"]]\nLine 26698: 6/5/2025 10:06:01.690 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] videoRenderingHelpers: [startPreview] resuming local video [windowId=0ba68bb2-23ec-4de4-bdb6-c560587da57f, intentId=11101730-3347-4190-8b4e-ea4062f82c4f, contextId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_4_Video_preview, ignoreMirroring=false, streamType=0, compositorId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_4, teamsCallId=4]\nLine 26760: 6/5/2025 10:06:01.892 GMT+8  War\tCID[e01cd73c-a420-4aa6-a1a6-e9bb7a0a300a] useTeamsCallId: No teamsCallId received for intent id null\nLine 26761: 6/5/2025 10:06:01.892 GMT+8  Err\tCID[e01cd73c-a420-4aa6-a1a6-e9bb7a0a300a] useTeamsCallId: No intentId: null provided to useTeamsCallId, query is skipped\nLine 26907: 6/5/2025 10:06:02.060 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] compositorManager: [disposeCompositor] cId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_undefined_content-camera-stream-vid_046d&pid_0876 teamsCallId=null refCount=0 keeping persistent compositor\nLine 26912: 6/5/2025 10:06:02.060 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] compositorManager: [disposeCompositor] cId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_video_4_Main teamsCallId=4 refCount=0 keeping persistent compositor\nLine 26917: 6/5/2025 10:06:02.060 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] compositorManager: [disposeCompositor] cId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_4 teamsCallId=4 refCount=0 keeping persistent compositor\nLine 26963: 6/5/2025 10:06:02.133 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] CallingIntentMultiWindowService: [getTeamsCallFromIntentId] #callpopout all calls info [teamsCallId, intentId]: [[4,\"11101730-3347-4190-8b4e-ea4062f82c4f\"]]\nLine 26969: 6/5/2025 10:06:02.133 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] videoRenderingHelpers: [startPreview] resuming local video [windowId=0ba68bb2-23ec-4de4-bdb6-c560587da57f, intentId=, contextId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_undefined_content-camera-stream-vid_046d&pid_0876_Video_preview_s_content-camera-stream-vid_046d&pid_0876, ignoreMirroring=true, streamType=0, compositorId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_undefined_content-camera-stream-vid_046d&pid_0876, teamsCallId=undefined]\nLine 26973: 6/5/2025 10:06:02.152 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] CallingIntentMultiWindowService: [getTeamsCallFromIntentId] #callpopout all calls info [teamsCallId, intentId]: [[4,\"11101730-3347-4190-8b4e-ea4062f82c4f\"]]\n... and 961 more matches",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 981
+        }
+      },
+      "timestamp": "2025-06-11T04:34:22.190Z"
+    },
+    {
+      "id": "call_iSpgqYrIzU45tJQbMUC72g6r",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "participant added"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"participant added\":\nLine 26481: 6/5/2025 10:06:01.264 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] callingParticipantService: participant added: 8:orgid:761f647c-c4ca-41a5-a38a-7f9aa85fea0c, [spotlighted=false]\nLine 26483: 6/5/2025 10:06:01.264 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 3966e411-9657-496d-ade1-dcf5ba72757c\nLine 26495: 6/5/2025 10:06:01.381 GMT+8  Inf\tCID[0ba68bb2-23ec-4de4-bdb6-c560587da57f] ParticipantsDataProvider [calling-screen][4]: Participant added by subscription: 8:orgid:761f647c-c4ca-41a5-a38a-7f9aa85fea0c. Participant state: 3\nLine 26594: 6/5/2025 10:06:01.461 GMT+8  Inf\tCID[e01cd73c-a420-4aa6-a1a6-e9bb7a0a300a] ParticipantsDataProvider [ubar][4]: Participant added by subscription: 8:orgid:761f647c-c4ca-41a5-a38a-7f9aa85fea0c. Participant state: 3\nLine 26605: 6/5/2025 10:06:01.464 GMT+8  Inf\tCID[e01cd73c-a420-4aa6-a1a6-e9bb7a0a300a] ParticipantsDataProvider [roster][4]: Participant added by subscription: 8:orgid:761f647c-c4ca-41a5-a38a-7f9aa85fea0c. Participant state: 3\nLine 39147: 6/5/2025 10:43:57.581 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] callingParticipantService: participant added: 8:orgid:35e04a95-c4ea-4437-a5ee-cc2f510cf3ed, [spotlighted=false]\nLine 39149: 6/5/2025 10:43:57.581 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] callingParticipantService: participant added: 8:orgid:f31d9dd2-85e9-4227-a6b9-45989349094a, [spotlighted=false]\nLine 52219: 6/5/2025 11:31:27.951 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] callingParticipantService: participant added: 8:orgid:4724698f-c500-46e7-ac66-5ac20bacd615, [spotlighted=false]\nLine 52221: 6/5/2025 11:31:27.951 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 3c72d4a8-f741-46af-9384-332efcc0d069\nLine 52224: 6/5/2025 11:31:27.952 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 3c72d4a8-f741-46af-9384-332efcc0d069\nLine 53928: 6/5/2025 11:34:53.259 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] callingParticipantService: participant added: 8:orgid:07816bca-a221-41d9-92ba-d7657262b34f, [spotlighted=false]\nLine 53930: 6/5/2025 11:34:53.259 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 3c72d4a8-f741-46af-9384-332efcc0d069\nLine 53943: 6/5/2025 11:34:53.370 GMT+8  Inf\tCID[d842219b-445c-46f8-8a68-6d5d13910877] ParticipantsDataProvider [calling-screen][7]: Participant added by subscription: 8:orgid:07816bca-a221-41d9-92ba-d7657262b34f. Participant state: 3\nLine 53945: 6/5/2025 11:34:53.378 GMT+8  Inf\tCID[e01cd73c-a420-4aa6-a1a6-e9bb7a0a300a] ParticipantsDataProvider [ubar][7]: Participant added by subscription: 8:orgid:07816bca-a221-41d9-92ba-d7657262b34f. Participant state: 3\nLine 53956: 6/5/2025 11:34:53.381 GMT+8  Inf\tCID[e01cd73c-a420-4aa6-a1a6-e9bb7a0a300a] ParticipantsDataProvider [roster][7]: Participant added by subscription: 8:orgid:07816bca-a221-41d9-92ba-d7657262b34f. Participant state: 3\nLine 79404: 6/5/2025 14:08:16.203 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] callingParticipantService: participant added: 8:orgid:9c34a635-33c9-4f47-86fb-33bda76d02d9, [spotlighted=false]\nLine 79406: 6/5/2025 14:08:16.203 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 0941cbfa-e71f-42a7-b502-93fb7dee41a7\nLine 81493: 6/5/2025 14:08:20.039 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] callingParticipantService: participant added: 8:orgid:9c34a635-33c9-4f47-86fb-33bda76d02d9, [spotlighted=false]",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 18
+        }
+      },
+      "timestamp": "2025-06-11T04:34:29.542Z"
+    },
+    {
+      "id": "call_TUikNNZQYwjRcnhsfLd6Px5s",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "call ended"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\nNo matches found for pattern \"call ended\"",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 0
+        }
+      },
+      "timestamp": "2025-06-11T04:34:33.994Z"
+    },
+    {
+      "id": "call_j9FjPc2C1zFESBeBflT8stdX",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "Participant added for call"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"Participant added for call\":\nLine 26483: 6/5/2025 10:06:01.264 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 3966e411-9657-496d-ade1-dcf5ba72757c\nLine 52221: 6/5/2025 11:31:27.951 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 3c72d4a8-f741-46af-9384-332efcc0d069\nLine 52224: 6/5/2025 11:31:27.952 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 3c72d4a8-f741-46af-9384-332efcc0d069\nLine 53930: 6/5/2025 11:34:53.259 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 3c72d4a8-f741-46af-9384-332efcc0d069\nLine 79406: 6/5/2025 14:08:16.203 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 0941cbfa-e71f-42a7-b502-93fb7dee41a7",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 5
+        }
+      },
+      "timestamp": "2025-06-11T04:34:38.834Z"
+    },
+    {
+      "id": "call_BuhsZVEzz5cUR3jmLiv4HLdg",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "3966e411"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"3966e411\":\nLine 26028: 6/5/2025 10:04:36.585 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 0\nLine 26031: 6/5/2025 10:04:36.677 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/ICallParticipant[8:u13][3][119] setVoiceLevel 1\nLine 26033: 6/5/2025 10:04:36.677 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 1\nLine 26035: 6/5/2025 10:04:37.999 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onDominantSpeakerListChanged: number of dominant speakers 3, there is no current dominant speaker false\nLine 26038: 6/5/2025 10:04:38.277 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/ICallParticipant[8:u13][3][119] setVoiceLevel 0\nLine 26040: 6/5/2025 10:04:38.278 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 0\nLine 26042: 6/5/2025 10:04:39.681 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onSlowedDownActiveTalkerListChanged: number of slowed down speakers 0\nLine 26045: 6/5/2025 10:04:42.562 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/ICallParticipant[8:u13][3][119] setVoiceLevel 1\nLine 26047: 6/5/2025 10:04:42.562 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 1\nLine 26049: 6/5/2025 10:04:42.685 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onSlowedDownActiveTalkerListChanged: number of slowed down speakers 1\nLine 26052: 6/5/2025 10:04:43.681 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/VideoLayout[#2:4] heartbeat rid:sid:msi:rdy?:run?:status:timing [vid:fsid:frmcnt] vbss (#0 []) video (#2 [0:121:1054:true:true:2:1.129+119s [0:00ba68bb2-23ec-4de4-bdb6-c560587da57f_video_4_Main:1] 2:127:1267:true:true:3:1.496+102s [2:20ba68bb2-23ec-4de4-bdb6-c560587da57f_video_4_Main:1]]) ums (#0 [])\nLine 26056: 6/5/2025 10:04:47.158 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/ICallParticipant[8:u13][3][119] setVoiceLevel 0\nLine 26058: 6/5/2025 10:04:47.158 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 0\nLine 26083: 6/5/2025 10:04:48.683 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onSlowedDownActiveTalkerListChanged: number of slowed down speakers 0\nLine 26086: 6/5/2025 10:04:50.139 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onDominantSpeakerListChanged: number of dominant speakers 3, there is no current dominant speaker true\nLine 26089: 6/5/2025 10:04:51.758 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/ICallParticipant[8:u13][3][119] setVoiceLevel 1\nLine 26091: 6/5/2025 10:04:51.758 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 1\nLine 26102: 6/5/2025 10:04:52.184 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onDominantSpeakerListChanged: number of dominant speakers 3, there is no current dominant speaker false\nLine 26105: 6/5/2025 10:04:52.683 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onSlowedDownActiveTalkerListChanged: number of slowed down speakers 1\nLine 26112: 6/5/2025 10:04:54.198 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onDominantSpeakerListChanged: number of dominant speakers 3, there is no current dominant speaker false\n... and 1996 more matches",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 2016
+        }
+      },
+      "timestamp": "2025-06-11T04:34:44.478Z"
+    },
+    {
+      "id": "call_RK7sTsMVZESrVEqYMX02TO6S",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "3c72d4a8-f741-46af-9384-332efcc0d069"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"3c72d4a8-f741-46af-9384-332efcc0d069\":\nLine 48686: 6/5/2025 11:31:23.241 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/[83b16f5b-3bc7-4267-8d65-0fe5fc860a3b][getCall[callId=3c72d4a8-f741-46af-9384-332efcc0d069][participantId=fbd82499-5127-4108-a6d3-cc144fbcdd52]] call does not exist, call.slimcoreCallId:0\nLine 48690: 6/5/2025 11:31:23.252 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[0:3c72d4a8-f741-46af-9384-332efcc0d069][][fbd82499][0] constructor\nLine 48692: 6/5/2025 11:31:23.252 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[0:3c72d4a8-f741-46af-9384-332efcc0d069][][fbd82499][0]/IpcStatsModule IpcStats provider disabled by ECS or not available\nLine 48694: 6/5/2025 11:31:23.252 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[0:3c72d4a8-f741-46af-9384-332efcc0d069][][fbd82499][0] Set threadId:19:meeti\nLine 48696: 6/5/2025 11:31:23.252 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[0:3c72d4a8-f741-46af-9384-332efcc0d069][][fbd82499][0] Set messageId:0\nLine 48698: 6/5/2025 11:31:23.252 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[0:3c72d4a8-f741-46af-9384-332efcc0d069][][fbd82499][0] Set applicationType:undefined\nLine 48700: 6/5/2025 11:31:23.252 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[0:3c72d4a8-f741-46af-9384-332efcc0d069][][fbd82499][0] fetchRegistrationIdFallBack\nLine 48702: 6/5/2025 11:31:23.255 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[0:3c72d4a8-f741-46af-9384-332efcc0d069][0c882216][fbd82499][0]/ScreenSharingControl ControlInjectorAdapter\nLine 48704: 6/5/2025 11:31:23.255 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[0:3c72d4a8-f741-46af-9384-332efcc0d069][0c882216][fbd82499][0]/SlimCoreElectronPTZHandler constructor(). call.participantId=fbd82499-5127-4108-a6d3-cc144fbcdd52\nLine 48706: 6/5/2025 11:31:23.255 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[0:3c72d4a8-f741-46af-9384-332efcc0d069][0c882216][fbd82499][0]/[Operation] [cc516fa6][_ElectronLocalRecordingCreated][creating...]\nLine 48707: 6/5/2025 11:31:23.255 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/[83b16f5b-3bc7-4267-8d65-0fe5fc860a3b][initCall[callId=3c72d4a8-f741-46af-9384-332efcc0d069][participantId=fbd82499-5127-4108-a6d3-cc144fbcdd52]] callObjectId=139\nLine 48709: 6/5/2025 11:31:23.256 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[0:3c72d4a8-f741-46af-9384-332efcc0d069][0c882216][fbd82499][0]/[Operation] [02e7a3a0][_ElectronSlimcoreReady][creating...]\nLine 48711: 6/5/2025 11:31:23.256 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[0:3c72d4a8-f741-46af-9384-332efcc0d069][0c882216][fbd82499][0]/[Operation] [83b16f5b][_IncomingInitialize] executing operation...\nLine 48713: 6/5/2025 11:31:23.258 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[0:3c72d4a8-f741-46af-9384-332efcc0d069][0c882216][fbd82499][0] getProperties oid 139 21 / 2\nLine 48715: 6/5/2025 11:31:23.259 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[0:3c72d4a8-f741-46af-9384-332efcc0d069][0c882216][fbd82499][0] Set isHuddleGroupCall:false\nLine 48717: 6/5/2025 11:31:23.260 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[0:3c72d4a8-f741-46af-9384-332efcc0d069][0c882216][fbd82499][0] _groupKeyManagerMri: null\nLine 48719: 6/5/2025 11:31:23.260 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[139:3c72d4a8-f741-46af-9384-332efcc0d069][0c882216][fbd82499][0]/SlimCoreElectronRemoteStreamManager[139] constructor causeId: 83b16f5b-3bc7-4267-8d65-0fe5fc860a3b\nLine 48721: 6/5/2025 11:31:23.263 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[139:3c72d4a8-f741-46af-9384-332efcc0d069][0c882216][fbd82499][0] getProperties oid 139 37 / 9\nLine 48724: 6/5/2025 11:31:23.265 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[139:3c72d4a8-f741-46af-9384-332efcc0d069][0c882216][fbd82499][0]/[83b16f5b-3bc7-4267-8d65-0fe5fc860a3b][updateCallType]current=-1 newValue: 2\nLine 48726: 6/5/2025 11:31:23.265 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/5[139:3c72d4a8-f741-46af-9384-332efcc0d069][0c882216][fbd82499][0] _onCallIdChanged 3c72d4a8-f741-46af-9384-332efcc0d069\n... and 697 more matches",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 717
+        }
+      },
+      "timestamp": "2025-06-11T04:34:55.495Z"
+    },
+    {
+      "id": "call_v0bgfEMisdTDb6QT4j7IaYZG",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "0941cbfa-e71f-42a7-b502-93fb7dee41a7"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"0941cbfa-e71f-42a7-b502-93fb7dee41a7\":\nLine 75308: 6/5/2025 14:08:09.750 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/[9fb1c1eb-cba2-45bd-812b-24811f1de8e1][createCallAsync] callId:0941cbfa-e71f-42a7-b502-93fb7dee41a7, localParticipantId: u25,\nLine 75310: 6/5/2025 14:08:09.752 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/6[0:0941cbfa-e71f-42a7-b502-93fb7dee41a7][][5f0d58bd][0] constructor\nLine 75312: 6/5/2025 14:08:09.752 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/6[0:0941cbfa-e71f-42a7-b502-93fb7dee41a7][][5f0d58bd][0]/IpcStatsModule IpcStats provider disabled by ECS or not available\nLine 75314: 6/5/2025 14:08:09.753 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/6[0:0941cbfa-e71f-42a7-b502-93fb7dee41a7][][5f0d58bd][0] Set threadId:null\nLine 75316: 6/5/2025 14:08:09.753 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/6[0:0941cbfa-e71f-42a7-b502-93fb7dee41a7][][5f0d58bd][0] Set messageId:undefined\nLine 75318: 6/5/2025 14:08:09.753 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/6[0:0941cbfa-e71f-42a7-b502-93fb7dee41a7][][5f0d58bd][0] Set applicationType:undefined\nLine 75320: 6/5/2025 14:08:09.753 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/6[0:0941cbfa-e71f-42a7-b502-93fb7dee41a7][][5f0d58bd][0] fetchRegistrationIdFallBack\nLine 75322: 6/5/2025 14:08:09.758 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/6[0:0941cbfa-e71f-42a7-b502-93fb7dee41a7][0c882216][5f0d58bd][0]/ScreenSharingControl ControlInjectorAdapter\nLine 75324: 6/5/2025 14:08:09.758 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/6[0:0941cbfa-e71f-42a7-b502-93fb7dee41a7][0c882216][5f0d58bd][0]/SlimCoreElectronPTZHandler constructor(). call.participantId=5f0d58bd-9b60-48f1-b987-aa88872682c6\nLine 75326: 6/5/2025 14:08:09.759 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/6[0:0941cbfa-e71f-42a7-b502-93fb7dee41a7][0c882216][5f0d58bd][0]/[Operation] [f3fee24c][_ElectronLocalRecordingCreated][creating...]\nLine 75338: 6/5/2025 14:08:09.761 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=0941cbfa-e71f-42a7-b502-93fb7dee41a7::teamsCallId=9]: extendedCallState changed: undefined => 0\nLine 75343: 6/5/2025 14:08:09.764 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] MwbtMixin: [MWBT] call (callId: 0941cbfa-e71f-42a7-b502-93fb7dee41a7) isMwbtCall set to false.\nLine 75345: 6/5/2025 14:08:09.767 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RaiseHandMixin: raiseHand is enabled: false, feature enabled: true, isRaiseHandAllowedInMeeting: true enabled for mainApp: true for the call: 0941cbfa-e71f-42a7-b502-93fb7dee41a7\nLine 75347: 6/5/2025 14:08:09.767 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] WeatherpersonMixin: Cameo enabled: true, desktop supported: true for the call: 0941cbfa-e71f-42a7-b502-93fb7dee41a7\nLine 75351: 6/5/2025 14:08:09.768 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] AttendeeModalityRestrictionsMixin: requestToSpeakEnabled: true, audioRestriction: true, videoRestriction: true for the call: 0941cbfa-e71f-42a7-b502-93fb7dee41a7\nLine 75354: 6/5/2025 14:08:09.769 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] MeetingRoleMixin: feature enabled: enableStructuredMeetingsSettingsConsumption: true, enableStructuredMeetingsActions: true for the call: 0941cbfa-e71f-42a7-b502-93fb7dee41a7\nLine 75356: 6/5/2025 14:08:09.770 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] MultiChannelAudioMixinImplementation[0941cbfa-e71f-42a7-b502-93fb7dee41a7]: Feature flag is enabled. Media is compatible.\nLine 75359: 6/5/2025 14:08:09.770 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] MultiChannelAudioMixinImplementation[0941cbfa-e71f-42a7-b502-93fb7dee41a7]: In Room Attribution policy retrieved: shouldSendMultichannelAudioByPolicy=false\nLine 75361: 6/5/2025 14:08:09.770 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] callingSupportService: isSpotlightEnabledInternal: Setting re-fetch for call 0941cbfa-e71f-42a7-b502-93fb7dee41a7, isBroadcast=undefined, P2P=false\nLine 75366: 6/5/2025 14:08:09.771 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] VirtualStreamManagerMixin[7]: [0941cbfa-e71f-42a7-b502-93fb7dee41a7] VirtualStreamManager V2 is enabled.\n... and 337 more matches",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 357
+        }
+      },
+      "timestamp": "2025-06-11T04:34:56.966Z"
+    },
+    {
+      "id": "call_TF0WMss4GlKs5OSlykhZEcyu",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "callId="
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"callId=\":\nLine 26151: 6/5/2025 10:05:03.681 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] callingParticipantService: participant removed: 8:orgid:351f2357-dea2-4c94-9ee7-6795c2def1cf, [teamsCallId=4] [callId=3966e411-9657-496d-ade1-dcf5ba72757c]\nLine 26321: 6/5/2025 10:05:14.698 GMT+8  Inf\tCID[0ba68bb2-23ec-4de4-bdb6-c560587da57f] CallingScreenManager: Call state for teamsCallId=4 is: 3, intent.id = 11101730-3347-4190-8b4e-ea4062f82c4f, intent.type=Meeting\nLine 26323: 6/5/2025 10:05:14.698 GMT+8  Inf\tCID[0ba68bb2-23ec-4de4-bdb6-c560587da57f] CallingScreenManager: Call mode for teamsCallId=4 is: 1, intent.id = 11101730-3347-4190-8b4e-ea4062f82c4f, intent.type=Meeting\nLine 26482: [teamsCallId=4][callId=3966e411-9657-496d-ade1-dcf5ba72757c]\nLine 26616: 6/5/2025 10:06:01.518 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] compositorManager: [disposeCompositor] cId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_undefined_content-camera-stream-vid_046d&pid_0876 teamsCallId=null refCount=0 keeping persistent compositor\nLine 26621: 6/5/2025 10:06:01.518 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] compositorManager: [disposeCompositor] cId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_video_4_Main teamsCallId=4 refCount=0 keeping persistent compositor\nLine 26626: 6/5/2025 10:06:01.518 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] compositorManager: [disposeCompositor] cId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_4 teamsCallId=4 refCount=0 keeping persistent compositor\nLine 26688: 6/5/2025 10:06:01.681 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] videoRenderingHelpers: [startPreview] resuming local video [windowId=0ba68bb2-23ec-4de4-bdb6-c560587da57f, intentId=, contextId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_undefined_content-camera-stream-vid_046d&pid_0876_Video_preview_s_content-camera-stream-vid_046d&pid_0876, ignoreMirroring=true, streamType=0, compositorId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_undefined_content-camera-stream-vid_046d&pid_0876, teamsCallId=undefined]\nLine 26698: 6/5/2025 10:06:01.690 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] videoRenderingHelpers: [startPreview] resuming local video [windowId=0ba68bb2-23ec-4de4-bdb6-c560587da57f, intentId=11101730-3347-4190-8b4e-ea4062f82c4f, contextId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_4_Video_preview, ignoreMirroring=false, streamType=0, compositorId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_4, teamsCallId=4]\nLine 26907: 6/5/2025 10:06:02.060 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] compositorManager: [disposeCompositor] cId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_undefined_content-camera-stream-vid_046d&pid_0876 teamsCallId=null refCount=0 keeping persistent compositor\nLine 26912: 6/5/2025 10:06:02.060 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] compositorManager: [disposeCompositor] cId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_video_4_Main teamsCallId=4 refCount=0 keeping persistent compositor\nLine 26917: 6/5/2025 10:06:02.060 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] compositorManager: [disposeCompositor] cId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_4 teamsCallId=4 refCount=0 keeping persistent compositor\nLine 26969: 6/5/2025 10:06:02.133 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] videoRenderingHelpers: [startPreview] resuming local video [windowId=0ba68bb2-23ec-4de4-bdb6-c560587da57f, intentId=, contextId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_undefined_content-camera-stream-vid_046d&pid_0876_Video_preview_s_content-camera-stream-vid_046d&pid_0876, ignoreMirroring=true, streamType=0, compositorId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_undefined_content-camera-stream-vid_046d&pid_0876, teamsCallId=undefined]\nLine 26979: 6/5/2025 10:06:02.152 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] videoRenderingHelpers: [startPreview] resuming local video [windowId=0ba68bb2-23ec-4de4-bdb6-c560587da57f, intentId=11101730-3347-4190-8b4e-ea4062f82c4f, contextId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_4_Video_preview, ignoreMirroring=false, streamType=0, compositorId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_4, teamsCallId=4]\nLine 27063: 6/5/2025 10:06:02.669 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] compositorManager: [handleStartStream] Starting stream for teamsCallId=4, cId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_video_4_Main, vId=3, key=8:orgid:761f647c-c4ca-41a5-a38a-7f9aa85fea0c, bufferName=0ba68bb2-23ec-4de4-bdb6-c560587da57f_video_4_Main_3, streamId=130, isStreamRestart=false\nLine 27138: 6/5/2025 10:06:04.117 GMT+8  Inf\tCID[0ba68bb2-23ec-4de4-bdb6-c560587da57f] CallingScreenManager: Call state for teamsCallId=4 is: 3, intent.id = 11101730-3347-4190-8b4e-ea4062f82c4f, intent.type=Meeting\nLine 27140: 6/5/2025 10:06:04.117 GMT+8  Inf\tCID[0ba68bb2-23ec-4de4-bdb6-c560587da57f] CallingScreenManager: Call mode for teamsCallId=4 is: 1, intent.id = 11101730-3347-4190-8b4e-ea4062f82c4f, intent.type=Meeting\nLine 29321: 6/5/2025 10:16:13.181 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] compositorManager: [disposeCompositor] cId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_myself_undefined_content-camera-stream-vid_046d&pid_0876 teamsCallId=null refCount=0 keeping persistent compositor\nLine 29401: 6/5/2025 10:16:13.374 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] compositorManager: [handleStartStream] Starting stream for teamsCallId=4, cId=0ba68bb2-23ec-4de4-bdb6-c560587da57f_stage_4_Main, vId=0, key=8:orgid:f31d9dd2-85e9-4227-a6b9-45989349094a_s, bufferName=0ba68bb2-23ec-4de4-bdb6-c560587da57f_stage_4_Main_0, streamId=132, isStreamRestart=false\nLine 29537: 6/5/2025 10:16:14.102 GMT+8  Inf\tCID[0ba68bb2-23ec-4de4-bdb6-c560587da57f] CallingScreenManager: Call state for teamsCallId=4 is: 3, intent.id = 11101730-3347-4190-8b4e-ea4062f82c4f, intent.type=Meeting\n... and 422 more matches",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 442
+        }
+      },
+      "timestamp": "2025-06-11T04:35:02.042Z"
+    },
+    {
+      "id": "call_3IC8NE7zNBspO0J0Es6oACQM",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "createCallAsync.*3966e411"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"createCallAsync.*3966e411\":\nLine 37053: 6/5/2025 10:43:54.710 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/[85a6fdf8-bce9-4203-a66b-26e795f3780e][createCallAsync] callId:3966e411-9657-496d-ade1-dcf5ba72757c, localParticipantId: u17,",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 1
+        }
+      },
+      "timestamp": "2025-06-11T04:35:08.276Z"
+    },
+    {
+      "id": "call_PN5xza3xuoOiM7lKGe4M1xoc",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "3966e411-9657-496d-ade1-dcf5ba72757c"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"3966e411-9657-496d-ade1-dcf5ba72757c\":\nLine 26028: 6/5/2025 10:04:36.585 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 0\nLine 26031: 6/5/2025 10:04:36.677 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/ICallParticipant[8:u13][3][119] setVoiceLevel 1\nLine 26033: 6/5/2025 10:04:36.677 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 1\nLine 26035: 6/5/2025 10:04:37.999 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onDominantSpeakerListChanged: number of dominant speakers 3, there is no current dominant speaker false\nLine 26038: 6/5/2025 10:04:38.277 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/ICallParticipant[8:u13][3][119] setVoiceLevel 0\nLine 26040: 6/5/2025 10:04:38.278 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 0\nLine 26042: 6/5/2025 10:04:39.681 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onSlowedDownActiveTalkerListChanged: number of slowed down speakers 0\nLine 26045: 6/5/2025 10:04:42.562 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/ICallParticipant[8:u13][3][119] setVoiceLevel 1\nLine 26047: 6/5/2025 10:04:42.562 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 1\nLine 26049: 6/5/2025 10:04:42.685 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onSlowedDownActiveTalkerListChanged: number of slowed down speakers 1\nLine 26052: 6/5/2025 10:04:43.681 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/VideoLayout[#2:4] heartbeat rid:sid:msi:rdy?:run?:status:timing [vid:fsid:frmcnt] vbss (#0 []) video (#2 [0:121:1054:true:true:2:1.129+119s [0:00ba68bb2-23ec-4de4-bdb6-c560587da57f_video_4_Main:1] 2:127:1267:true:true:3:1.496+102s [2:20ba68bb2-23ec-4de4-bdb6-c560587da57f_video_4_Main:1]]) ums (#0 [])\nLine 26056: 6/5/2025 10:04:47.158 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/ICallParticipant[8:u13][3][119] setVoiceLevel 0\nLine 26058: 6/5/2025 10:04:47.158 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 0\nLine 26083: 6/5/2025 10:04:48.683 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onSlowedDownActiveTalkerListChanged: number of slowed down speakers 0\nLine 26086: 6/5/2025 10:04:50.139 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onDominantSpeakerListChanged: number of dominant speakers 3, there is no current dominant speaker true\nLine 26089: 6/5/2025 10:04:51.758 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/ICallParticipant[8:u13][3][119] setVoiceLevel 1\nLine 26091: 6/5/2025 10:04:51.758 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 1\nLine 26102: 6/5/2025 10:04:52.184 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onDominantSpeakerListChanged: number of dominant speakers 3, there is no current dominant speaker false\nLine 26105: 6/5/2025 10:04:52.683 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onSlowedDownActiveTalkerListChanged: number of slowed down speakers 1\nLine 26112: 6/5/2025 10:04:54.198 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onDominantSpeakerListChanged: number of dominant speakers 3, there is no current dominant speaker false\n... and 1988 more matches",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 2008
+        }
+      },
+      "timestamp": "2025-06-11T04:35:14.885Z"
+    },
+    {
+      "id": "call_8bV6WqmHn3A9mo6opW4SUZ3x",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "createCallAsync"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"createCallAsync\":\nLine 37053: 6/5/2025 10:43:54.710 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/[85a6fdf8-bce9-4203-a66b-26e795f3780e][createCallAsync] callId:3966e411-9657-496d-ade1-dcf5ba72757c, localParticipantId: u17,\nLine 75308: 6/5/2025 14:08:09.750 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/[9fb1c1eb-cba2-45bd-812b-24811f1de8e1][createCallAsync] callId:0941cbfa-e71f-42a7-b502-93fb7dee41a7, localParticipantId: u25,\nLine 77022: 6/5/2025 14:08:10.527 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/[1d1d1b88-057a-45b0-b25e-845581e3970b][createCallAsync] callId:02bbec84-414e-4336-b96f-6f9dac635de4, localParticipantId: u26,\nLine 79422: 6/5/2025 14:08:16.220 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/[569a62b7-35aa-4a5a-8339-632c81872e5f][createCallAsync] callId:b02d6b8c-cec6-409c-8b29-42e203888e20, localParticipantId: u28,\nLine 82711: 6/5/2025 14:08:25.350 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/[02396fc1-b74e-4476-85bb-416ebb2acc19][createCallAsync] callId:c7dfbe52-3626-49ab-97bf-7fea01f6f872, localParticipantId: u31,",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 5
+        }
+      },
+      "timestamp": "2025-06-11T04:35:19.491Z"
+    },
+    {
+      "id": "call_57lwsxWymaHifEvHshhwbqdl",
+      "name": "shell",
+      "arguments": {
+        "command": [
+          "bash",
+          "-lc",
+          "grep -n \"Participant added for call\" -i \"zoomed issue.txt\" | head"
+        ]
+      },
+      "result": {
+        "output": "\n\nSTDERR:\ngrep: zoomed issue.txt: No such file or directory\n",
+        "metadata": {
+          "exit_code": 0,
+          "duration_seconds": 1.444
+        }
+      },
+      "timestamp": "2025-06-11T04:35:29.321Z"
+    },
+    {
+      "id": "call_hadkWP79aJceGQG49kxKJu9E",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "3966e411-9657-496d-ade1-dcf5ba72757c"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"3966e411-9657-496d-ade1-dcf5ba72757c\":\nLine 26028: 6/5/2025 10:04:36.585 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 0\nLine 26031: 6/5/2025 10:04:36.677 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/ICallParticipant[8:u13][3][119] setVoiceLevel 1\nLine 26033: 6/5/2025 10:04:36.677 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 1\nLine 26035: 6/5/2025 10:04:37.999 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onDominantSpeakerListChanged: number of dominant speakers 3, there is no current dominant speaker false\nLine 26038: 6/5/2025 10:04:38.277 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/ICallParticipant[8:u13][3][119] setVoiceLevel 0\nLine 26040: 6/5/2025 10:04:38.278 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 0\nLine 26042: 6/5/2025 10:04:39.681 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onSlowedDownActiveTalkerListChanged: number of slowed down speakers 0\nLine 26045: 6/5/2025 10:04:42.562 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/ICallParticipant[8:u13][3][119] setVoiceLevel 1\nLine 26047: 6/5/2025 10:04:42.562 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 1\nLine 26049: 6/5/2025 10:04:42.685 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onSlowedDownActiveTalkerListChanged: number of slowed down speakers 1\nLine 26052: 6/5/2025 10:04:43.681 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/VideoLayout[#2:4] heartbeat rid:sid:msi:rdy?:run?:status:timing [vid:fsid:frmcnt] vbss (#0 []) video (#2 [0:121:1054:true:true:2:1.129+119s [0:00ba68bb2-23ec-4de4-bdb6-c560587da57f_video_4_Main:1] 2:127:1267:true:true:3:1.496+102s [2:20ba68bb2-23ec-4de4-bdb6-c560587da57f_video_4_Main:1]]) ums (#0 [])\nLine 26056: 6/5/2025 10:04:47.158 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/ICallParticipant[8:u13][3][119] setVoiceLevel 0\nLine 26058: 6/5/2025 10:04:47.158 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 0\nLine 26083: 6/5/2025 10:04:48.683 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onSlowedDownActiveTalkerListChanged: number of slowed down speakers 0\nLine 26086: 6/5/2025 10:04:50.139 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onDominantSpeakerListChanged: number of dominant speakers 3, there is no current dominant speaker true\nLine 26089: 6/5/2025 10:04:51.758 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3]/ICallParticipant[8:u13][3][119] setVoiceLevel 1\nLine 26091: 6/5/2025 10:04:51.758 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onActiveSpeakerListChanged: number of active speakers 1\nLine 26102: 6/5/2025 10:04:52.184 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onDominantSpeakerListChanged: number of dominant speakers 3, there is no current dominant speaker false\nLine 26105: 6/5/2025 10:04:52.683 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onSlowedDownActiveTalkerListChanged: number of slowed down speakers 1\nLine 26112: 6/5/2025 10:04:54.198 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/3[110:3966e411-9657-496d-ade1-dcf5ba72757c][0c882216][60687e73][3] _onDominantSpeakerListChanged: number of dominant speakers 3, there is no current dominant speaker false\n... and 1988 more matches",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 2008
+        }
+      },
+      "timestamp": "2025-06-11T04:35:50.225Z"
+    },
+    {
+      "id": "call_vxcFigop1gIO0wB2coCNHHLI",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "extendedCallState changed"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"extendedCallState changed\":\nLine 36632: 6/5/2025 10:43:53.495 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=3966e411-9657-496d-ade1-dcf5ba72757c::teamsCallId=4]: extendedCallState changed: 3 => 6\nLine 36927: 6/5/2025 10:43:54.677 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=3966e411-9657-496d-ade1-dcf5ba72757c::teamsCallId=4]: extendedCallState changed: 6 => 7\nLine 37083: 6/5/2025 10:43:54.715 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=3966e411-9657-496d-ade1-dcf5ba72757c::teamsCallId=5]: extendedCallState changed: undefined => 0\nLine 38855: 6/5/2025 10:43:56.806 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=3966e411-9657-496d-ade1-dcf5ba72757c::teamsCallId=5]: extendedCallState changed: 0 => 8\nLine 39856: 6/5/2025 10:44:00.221 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=3966e411-9657-496d-ade1-dcf5ba72757c::teamsCallId=5]: extendedCallState changed: 8 => 6\nLine 39904: 6/5/2025 10:44:00.236 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=3966e411-9657-496d-ade1-dcf5ba72757c::teamsCallId=5]: extendedCallState changed: 6 => 7\nLine 48800: 6/5/2025 11:31:23.274 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=3c72d4a8-f741-46af-9384-332efcc0d069::teamsCallId=7]: extendedCallState changed: undefined => 1\nLine 50828: 6/5/2025 11:31:26.644 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=3c72d4a8-f741-46af-9384-332efcc0d069::teamsCallId=7]: extendedCallState changed: 1 => 2\nLine 51055: 6/5/2025 11:31:27.095 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=3c72d4a8-f741-46af-9384-332efcc0d069::teamsCallId=7]: extendedCallState changed: 2 => 3\nLine 59150: 6/5/2025 12:22:33.218 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=3c72d4a8-f741-46af-9384-332efcc0d069::teamsCallId=7]: extendedCallState changed: 3 => 6\nLine 59432: 6/5/2025 12:22:33.473 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=3c72d4a8-f741-46af-9384-332efcc0d069::teamsCallId=7]: extendedCallState changed: 6 => 7\nLine 75338: 6/5/2025 14:08:09.761 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=0941cbfa-e71f-42a7-b502-93fb7dee41a7::teamsCallId=9]: extendedCallState changed: undefined => 0\nLine 76608: 6/5/2025 14:08:10.214 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=0941cbfa-e71f-42a7-b502-93fb7dee41a7::teamsCallId=9]: extendedCallState changed: 0 => 2\nLine 77052: 6/5/2025 14:08:10.530 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=02bbec84-414e-4336-b96f-6f9dac635de4::teamsCallId=10]: extendedCallState changed: undefined => 0\nLine 77831: 6/5/2025 14:08:11.139 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=02bbec84-414e-4336-b96f-6f9dac635de4::teamsCallId=10]: extendedCallState changed: 0 => 8\nLine 77906: 6/5/2025 14:08:11.151 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=02bbec84-414e-4336-b96f-6f9dac635de4::teamsCallId=10]: extendedCallState changed: 8 => 7\nLine 78570: 6/5/2025 14:08:15.520 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=0941cbfa-e71f-42a7-b502-93fb7dee41a7::teamsCallId=9]: extendedCallState changed: 2 => 3\nLine 79452: 6/5/2025 14:08:16.223 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=b02d6b8c-cec6-409c-8b29-42e203888e20::teamsCallId=11]: extendedCallState changed: undefined => 0\nLine 79803: 6/5/2025 14:08:16.314 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=b02d6b8c-cec6-409c-8b29-42e203888e20::teamsCallId=11]: extendedCallState changed: 0 => 8\nLine 79879: 6/5/2025 14:08:16.380 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=b02d6b8c-cec6-409c-8b29-42e203888e20::teamsCallId=11]: extendedCallState changed: 8 => 7\n... and 6 more matches",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 26
+        }
+      },
+      "timestamp": "2025-06-11T04:35:58.617Z"
+    },
+    {
+      "id": "call_soqOUFV7uJMYkreII2mu3ZHg",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "c7dfbe52-3626-49ab-97bf-7fea01f6f872"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"c7dfbe52-3626-49ab-97bf-7fea01f6f872\":\nLine 82711: 6/5/2025 14:08:25.350 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/[02396fc1-b74e-4476-85bb-416ebb2acc19][createCallAsync] callId:c7dfbe52-3626-49ab-97bf-7fea01f6f872, localParticipantId: u31,\nLine 82713: 6/5/2025 14:08:25.351 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/9[0:c7dfbe52-3626-49ab-97bf-7fea01f6f872][][17f61f3e][0] constructor\nLine 82715: 6/5/2025 14:08:25.351 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/9[0:c7dfbe52-3626-49ab-97bf-7fea01f6f872][][17f61f3e][0]/IpcStatsModule IpcStats provider disabled by ECS or not available\nLine 82717: 6/5/2025 14:08:25.351 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/9[0:c7dfbe52-3626-49ab-97bf-7fea01f6f872][][17f61f3e][0] Set threadId:19:meeti\nLine 82719: 6/5/2025 14:08:25.351 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/9[0:c7dfbe52-3626-49ab-97bf-7fea01f6f872][][17f61f3e][0] Set messageId:0\nLine 82721: 6/5/2025 14:08:25.351 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/9[0:c7dfbe52-3626-49ab-97bf-7fea01f6f872][][17f61f3e][0] Set applicationType:undefined\nLine 82723: 6/5/2025 14:08:25.351 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/9[0:c7dfbe52-3626-49ab-97bf-7fea01f6f872][][17f61f3e][0] fetchRegistrationIdFallBack\nLine 82725: 6/5/2025 14:08:25.352 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/9[0:c7dfbe52-3626-49ab-97bf-7fea01f6f872][0c882216][17f61f3e][0]/ScreenSharingControl ControlInjectorAdapter\nLine 82727: 6/5/2025 14:08:25.352 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/9[0:c7dfbe52-3626-49ab-97bf-7fea01f6f872][0c882216][17f61f3e][0]/SlimCoreElectronPTZHandler constructor(). call.participantId=17f61f3e-517f-451a-80b2-462c65757301\nLine 82729: 6/5/2025 14:08:25.352 GMT+8  Inf\tcallingAgents: slimcore-calling [JS.SlimCore.Electron] ffffffff: CallingStack[0]/CallRegistry/0/Electron/9[0:c7dfbe52-3626-49ab-97bf-7fea01f6f872][0c882216][17f61f3e][0]/[Operation] [c782a241][_ElectronLocalRecordingCreated][creating...]\nLine 82741: 6/5/2025 14:08:25.353 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=c7dfbe52-3626-49ab-97bf-7fea01f6f872::teamsCallId=12]: extendedCallState changed: undefined => 0\nLine 82746: 6/5/2025 14:08:25.354 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] MwbtMixin: [MWBT] call (callId: c7dfbe52-3626-49ab-97bf-7fea01f6f872) isMwbtCall set to false.\nLine 82748: 6/5/2025 14:08:25.354 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RaiseHandMixin: raiseHand is enabled: false, feature enabled: true, isRaiseHandAllowedInMeeting: true enabled for mainApp: true for the call: c7dfbe52-3626-49ab-97bf-7fea01f6f872\nLine 82750: 6/5/2025 14:08:25.355 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] WeatherpersonMixin: Cameo enabled: true, desktop supported: true for the call: c7dfbe52-3626-49ab-97bf-7fea01f6f872\nLine 82754: 6/5/2025 14:08:25.355 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] AttendeeModalityRestrictionsMixin: requestToSpeakEnabled: true, audioRestriction: true, videoRestriction: true for the call: c7dfbe52-3626-49ab-97bf-7fea01f6f872\nLine 82757: 6/5/2025 14:08:25.355 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] MeetingRoleMixin: feature enabled: enableStructuredMeetingsSettingsConsumption: true, enableStructuredMeetingsActions: true for the call: c7dfbe52-3626-49ab-97bf-7fea01f6f872\nLine 82759: 6/5/2025 14:08:25.356 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] MultiChannelAudioMixinImplementation[c7dfbe52-3626-49ab-97bf-7fea01f6f872]: Feature flag is enabled. Media is compatible.\nLine 82762: 6/5/2025 14:08:25.356 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] MultiChannelAudioMixinImplementation[c7dfbe52-3626-49ab-97bf-7fea01f6f872]: In Room Attribution policy retrieved: shouldSendMultichannelAudioByPolicy=false\nLine 82764: 6/5/2025 14:08:25.356 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] callingSupportService: isSpotlightEnabledInternal: Setting re-fetch for call c7dfbe52-3626-49ab-97bf-7fea01f6f872, isBroadcast=undefined, P2P=false\nLine 82769: 6/5/2025 14:08:25.356 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] VirtualStreamManagerMixin[10]: [c7dfbe52-3626-49ab-97bf-7fea01f6f872] VirtualStreamManager V2 is enabled.\n... and 396 more matches",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 416
+        }
+      },
+      "timestamp": "2025-06-11T04:36:05.830Z"
+    },
+    {
+      "id": "call_c6hqizu8O08l2gGRxJh79i6N",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "Participant added.*3966e411"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"Participant added.*3966e411\":\nLine 26483: 6/5/2025 10:06:01.264 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 3966e411-9657-496d-ade1-dcf5ba72757c",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 1
+        }
+      },
+      "timestamp": "2025-06-11T04:36:23.479Z"
+    },
+    {
+      "id": "call_2FLqCa9oL9hqiBzrN50tTiCe",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "0941cbfa-e71f-42a7-b502-93fb7dee41a7::"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"0941cbfa-e71f-42a7-b502-93fb7dee41a7::\":\nLine 75338: 6/5/2025 14:08:09.761 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=0941cbfa-e71f-42a7-b502-93fb7dee41a7::teamsCallId=9]: extendedCallState changed: undefined => 0\nLine 76608: 6/5/2025 14:08:10.214 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=0941cbfa-e71f-42a7-b502-93fb7dee41a7::teamsCallId=9]: extendedCallState changed: 0 => 2\nLine 78570: 6/5/2025 14:08:15.520 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=0941cbfa-e71f-42a7-b502-93fb7dee41a7::teamsCallId=9]: extendedCallState changed: 2 => 3\nLine 80214: 6/5/2025 14:08:19.537 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=0941cbfa-e71f-42a7-b502-93fb7dee41a7::teamsCallId=9]: extendedCallState changed: 3 => 7",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 4
+        }
+      },
+      "timestamp": "2025-06-11T04:36:43.979Z"
+    },
+    {
+      "id": "call_EVwQFB8kyHTzDMzTdqxlX46t",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "callId=3966e411.*undefined"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"callId=3966e411.*undefined\":\nLine 36682: 6/5/2025 10:43:53.501 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] CallingTelemetryService: Finish start call scenarios [call][callId=3966e411-9657-496d-ade1-dcf5ba72757c][action=cancel][abortReason=undefined][terminatedReason=0][callControllerCode=null][callControllerSubCode=null][reason=Hangup][primaryScenario=call_accept_meeting][scenarios=call_accept_meeting, media_connected_meeting][resultCategories=][message=null]\nLine 37083: 6/5/2025 10:43:54.715 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=3966e411-9657-496d-ade1-dcf5ba72757c::teamsCallId=5]: extendedCallState changed: undefined => 0\nLine 37253: 6/5/2025 10:43:54.737 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] CallingTelemetryService: Finish start call scenarios [call][callId=3966e411-9657-496d-ade1-dcf5ba72757c][action=cancel][abortReason=undefined][terminatedReason=1][callControllerCode=0][callControllerSubCode=0][reason=call.failureType: 2][primaryScenario=call_accept_meeting][scenarios=call_accept_meeting, media_connected_meeting][resultCategories=][message=LocalUserInitiated]\nLine 37267: 6/5/2025 10:43:54.741 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] callingService: [call][createCall][callId=3966e411-9657-496d-ade1-dcf5ba72757c][threadId=19:meeting_NjBkYWNlOTctMmE2YS00YjMzLTkwZWMtMjNhZTEzZmJhZjQy@thread.v2][messageId=0][participantId=3c097e34-a5ee-4da2-8eff-a8fd0275da43][teamsCallId=5][isScreenshareOnly=undefined]\nLine 38173: 6/5/2025 10:43:55.085 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] CallingLoggingService: Initializing draft chat cleanup subscription for callId=3966e411-9657-496d-ade1-dcf5ba72757c and lieConvId=undefined, shouldCreateSubscription=false",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 5
+        }
+      },
+      "timestamp": "2025-06-11T04:36:57.939Z"
+    },
+    {
+      "id": "call_TLe0YzzAt3LiafHuzehjilhR",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "callId=3966e411-9657-496d-ade1-dcf5ba72757c::\""
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\nNo matches found for pattern \"callId=3966e411-9657-496d-ade1-dcf5ba72757c::\"\"",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 0
+        }
+      },
+      "timestamp": "2025-06-11T04:37:05.796Z"
+    },
+    {
+      "id": "call_FS4hjsqSA1d0vep7HlYGm9zy",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "c7dfbe52-3626-49ab-97bf-7fea01f6f872::teamsCallId"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"c7dfbe52-3626-49ab-97bf-7fea01f6f872::teamsCallId\":\nLine 82741: 6/5/2025 14:08:25.353 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=c7dfbe52-3626-49ab-97bf-7fea01f6f872::teamsCallId=12]: extendedCallState changed: undefined => 0\nLine 84021: 6/5/2025 14:08:25.725 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=c7dfbe52-3626-49ab-97bf-7fea01f6f872::teamsCallId=12]: extendedCallState changed: 0 => 2\nLine 85041: 6/5/2025 14:08:28.332 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=c7dfbe52-3626-49ab-97bf-7fea01f6f872::teamsCallId=12]: extendedCallState changed: 2 => 3\nLine 87296: 6/5/2025 14:08:35.618 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=c7dfbe52-3626-49ab-97bf-7fea01f6f872::teamsCallId=12]: extendedCallState changed: 3 => 6\nLine 87558: 6/5/2025 14:08:35.806 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=c7dfbe52-3626-49ab-97bf-7fea01f6f872::teamsCallId=12]: extendedCallState changed: 6 => 7",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 5
+        }
+      },
+      "timestamp": "2025-06-11T04:37:22.849Z"
+    },
+    {
+      "id": "call_j58HWHuEradxfTmKjXeA8uQJ",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "callId=3966e411-9657-496d-ade1-dcf5ba72757c::teamsCallId=4"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"callId=3966e411-9657-496d-ade1-dcf5ba72757c::teamsCallId=4\":\nLine 36632: 6/5/2025 10:43:53.495 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=3966e411-9657-496d-ade1-dcf5ba72757c::teamsCallId=4]: extendedCallState changed: 3 => 6\nLine 36927: 6/5/2025 10:43:54.677 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=3966e411-9657-496d-ade1-dcf5ba72757c::teamsCallId=4]: extendedCallState changed: 6 => 7",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 2
+        }
+      },
+      "timestamp": "2025-06-11T04:37:35.963Z"
+    },
+    {
+      "id": "call_l8jFqZX3WythC46RRlFWd9mn",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "c7dfbe52.*participant added"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\nNo matches found for pattern \"c7dfbe52.*participant added\"",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 0
+        }
+      },
+      "timestamp": "2025-06-11T04:38:14.122Z"
+    },
+    {
+      "id": "call_dICKDoo7D4VEoq7LbIrs38vk",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "Participant added.*3966e411"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"Participant added.*3966e411\":\nLine 26483: 6/5/2025 10:06:01.264 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 3966e411-9657-496d-ade1-dcf5ba72757c",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 1
+        }
+      },
+      "timestamp": "2025-06-11T04:38:34.193Z"
+    },
+    {
+      "id": "call_sM7Ou9pU0o0YmvyQibthdcAp",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "participant added.*3966e411"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"participant added.*3966e411\":\nLine 26483: 6/5/2025 10:06:01.264 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 3966e411-9657-496d-ade1-dcf5ba72757c",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 1
+        }
+      },
+      "timestamp": "2025-06-11T04:38:43.089Z"
+    },
+    {
+      "id": "call_vIAiXEvLGzvHOLaMpUZh6QzC",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "participant added.*3c72d4a8"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"participant added.*3c72d4a8\":\nLine 52221: 6/5/2025 11:31:27.951 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 3c72d4a8-f741-46af-9384-332efcc0d069\nLine 52224: 6/5/2025 11:31:27.952 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 3c72d4a8-f741-46af-9384-332efcc0d069\nLine 53930: 6/5/2025 11:34:53.259 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] RigelAutoExitMeetingManager: Participant added for call 3c72d4a8-f741-46af-9384-332efcc0d069",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 3
+        }
+      },
+      "timestamp": "2025-06-11T04:39:06.961Z"
+    },
+    {
+      "id": "call_KjqbLvaslPZpjULJhH2lNN0n",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "participant added:.*3966e411"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\nNo matches found for pattern \"participant added:.*3966e411\"",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 0
+        }
+      },
+      "timestamp": "2025-06-11T04:39:20.774Z"
+    },
+    {
+      "id": "call_L5vZ2wGiYxmrnunuxvBESHYc",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "callId=3966e411.*undefined"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\n\nPattern matches for \"callId=3966e411.*undefined\":\nLine 36682: 6/5/2025 10:43:53.501 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] CallingTelemetryService: Finish start call scenarios [call][callId=3966e411-9657-496d-ade1-dcf5ba72757c][action=cancel][abortReason=undefined][terminatedReason=0][callControllerCode=null][callControllerSubCode=null][reason=Hangup][primaryScenario=call_accept_meeting][scenarios=call_accept_meeting, media_connected_meeting][resultCategories=][message=null]\nLine 37083: 6/5/2025 10:43:54.715 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] ExtendedCallStateMixin[callId=3966e411-9657-496d-ade1-dcf5ba72757c::teamsCallId=5]: extendedCallState changed: undefined => 0\nLine 37253: 6/5/2025 10:43:54.737 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] CallingTelemetryService: Finish start call scenarios [call][callId=3966e411-9657-496d-ade1-dcf5ba72757c][action=cancel][abortReason=undefined][terminatedReason=1][callControllerCode=0][callControllerSubCode=0][reason=call.failureType: 2][primaryScenario=call_accept_meeting][scenarios=call_accept_meeting, media_connected_meeting][resultCategories=][message=LocalUserInitiated]\nLine 37267: 6/5/2025 10:43:54.741 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] callingService: [call][createCall][callId=3966e411-9657-496d-ade1-dcf5ba72757c][threadId=19:meeting_NjBkYWNlOTctMmE2YS00YjMzLTkwZWMtMjNhZTEzZmJhZjQy@thread.v2][messageId=0][participantId=3c097e34-a5ee-4da2-8eff-a8fd0275da43][teamsCallId=5][isScreenshareOnly=undefined]\nLine 38173: 6/5/2025 10:43:55.085 GMT+8  Inf\tCID[Core-8fa128d8-18f8-4eea-83e5-79e2cbf74456] CallingLoggingService: Initializing draft chat cleanup subscription for callId=3966e411-9657-496d-ade1-dcf5ba72757c and lieConvId=undefined, shouldCreateSubscription=false",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 5
+        }
+      },
+      "timestamp": "2025-06-11T04:39:37.824Z"
+    },
+    {
+      "id": "call_DAeIu5lqT3Icm1PISdsfFWi5",
+      "name": "analyze_session_files",
+      "arguments": {
+        "fileNames": [
+          "zoomed issue.txt"
+        ],
+        "pattern": "participant added: .*teamsCallId=4"
+      },
+      "result": {
+        "output": "\n=== Analysis of zoomed issue.txt ===\nFile size: 20149736 bytes\nTotal lines: 109487\nNo matches found for pattern \"participant added: .*teamsCallId=4\"",
+        "metadata": {
+          "filesAnalyzed": 1,
+          "patternsFound": 0
+        }
+      },
+      "timestamp": "2025-06-11T04:40:10.850Z"
+    }
+  ]
+}

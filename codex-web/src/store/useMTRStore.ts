@@ -56,6 +56,15 @@ interface Session {
     provider: string
     approvalMode?: string
   }
+  agentActivity?: AgentActivity[]
+  toolExecutions?: ToolExecution[]
+}
+
+interface SavedSession {
+  id: string
+  createdAt: string
+  lastActivity: string
+  messageCount: number
 }
 
 interface TSG {
@@ -90,6 +99,7 @@ interface MTRStore {
   // Session State
   sessions: Map<string, Session>
   activeSessionId: string | null
+  savedSessions: SavedSession[]
 
   // Chat State
   messages: Message[]
@@ -131,6 +141,9 @@ interface MTRStore {
   setActiveSession: (id: string | null) => void
   addSession: (session: Session) => void
   removeSession: (id: string) => void
+  setSavedSessions: (sessions: SavedSession[]) => void
+  loadSession: (sessionId: string) => void
+  listSavedSessions: () => void
   
   // Message actions
   addMessage: (message: Message) => void
@@ -186,6 +199,7 @@ export const useMTRStore = create<MTRStore>((set, get) => ({
   socket: null,
   sessions: new Map(),
   activeSessionId: null,
+  savedSessions: [],
   messages: [],
   streamingMessageId: null,
   draftMessage: '',
@@ -232,6 +246,42 @@ export const useMTRStore = create<MTRStore>((set, get) => ({
       activeSessionId: state.activeSessionId === id ? null : state.activeSessionId
     }
   }),
+  
+  setSavedSessions: (sessions) => set({ savedSessions: sessions }),
+  
+  listSavedSessions: () => {
+    const socket = get().socket
+    if (!socket) return
+    
+    socket.emit('session:list')
+    socket.once('session:list:response', (data: { sessions: SavedSession[] }) => {
+      get().setSavedSessions(data.sessions)
+    })
+  },
+  
+  loadSession: (sessionId) => {
+    const socket = get().socket
+    if (!socket) return
+    
+    socket.emit('session:load', { sessionId })
+    socket.once('session:load:response', (data: any) => {
+      const session: Session = {
+        id: data.sessionId,
+        messages: data.messages.map((msg: any) => ({
+          ...msg,
+          timestamp: new Date(msg.timestamp)
+        })),
+        createdAt: new Date(data.createdAt),
+        lastActivity: new Date(data.lastActivity),
+        config: data.config,
+        agentActivity: data.agentActivity,
+        toolExecutions: data.toolExecutions
+      }
+      
+      get().addSession(session)
+      get().setActiveSession(session.id)
+    })
+  },
   
   // Message actions
   addMessage: (message) => set((state) => {

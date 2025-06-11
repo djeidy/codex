@@ -164,11 +164,13 @@ const tools: ChatCompletionTool[] = [
 
 export class AgentLoop {
   private openai: OpenAI;
-  private messages: ChatCompletionMessageParam[] = [];
+  public messages: ChatCompletionMessageParam[] = [];
   private abortController?: AbortController;
   private canceled = false;
+  public params: AgentLoopParams;
   
-  constructor(private params: AgentLoopParams) {
+  constructor(params: AgentLoopParams) {
+    this.params = params;
     // Initialize OpenAI client based on provider
     const apiKey = params.config.apiKey || process.env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -189,6 +191,17 @@ export class AgentLoop {
     });
   }
   
+  restoreMessages(messages: ChatCompletionMessageParam[]): void {
+    // Clear current messages and restore from saved session
+    this.messages = [
+      {
+        role: 'system',
+        content: this.buildSystemPrompt()
+      },
+      ...messages.filter(m => m.role !== 'system')
+    ];
+  }
+  
   private getBaseURL(): string {
     switch (this.params.provider) {
       case 'openai':
@@ -201,20 +214,37 @@ export class AgentLoop {
     }
   }
   
-  private buildSystemPrompt(): string {
+  public buildSystemPrompt(): string {
     let prompt = this.params.instructions || 
       'You are a helpful AI assistant specializing in log analysis and troubleshooting.';
     
     if (this.params.activeTSG) {
-      prompt += `\n\nActive TSG: ${this.params.activeTSG}. ` +
-        'Reference this guide when providing troubleshooting assistance.';
+      prompt += `\n\n## ACTIVE TROUBLESHOOTING GUIDE: ${this.params.activeTSG}\n` +
+        'IMPORTANT: A TSG (Troubleshooting Guide) has been selected for this session.\n' +
+        '1. ALWAYS start by reading the TSG using read_tsg("' + this.params.activeTSG + '") to understand the troubleshooting steps\n' +
+        '2. Follow the TSG methodology and reference it throughout your investigation\n' +
+        '3. If you encounter issues not covered in the TSG, note them for future updates\n' +
+        '4. Return to the TSG whenever you need guidance on next steps';
     }
     
-    prompt += '\n\nYou have access to tools for executing commands, reading/writing files, ' +
-      'and analyzing session logs. Use these tools to help diagnose and solve issues.';
+    prompt += '\n\n## AVAILABLE TOOLS\n' +
+      'You have access to tools for:\n' +
+      '- Executing commands (shell)\n' +
+      '- Reading/writing files (read_file, write_file, list_files)\n' +
+      '- Analyzing session logs (analyze_session_files)\n' +
+      '- Reading TSGs (read_tsg, list_tsgs)\n';
     
-    prompt += '\n\nIMPORTANT: When the user mentions uploaded files or when session files are present, ' +
-      'use the analyze_session_files tool to analyze them. Do not use list_files to search for uploaded files.';
+    prompt += '\n## SESSION FILES\n' +
+      'IMPORTANT: When session files are uploaded:\n' +
+      '1. Use analyze_session_files to analyze them (pass empty array to analyze all)\n' +
+      '2. Do NOT use list_files to search for uploaded files\n' +
+      '3. Session files are temporary and only available through analyze_session_files\n';
+    
+    prompt += '\n## WORKFLOW\n' +
+      '1. If a TSG is active, read it first before any investigation\n' +
+      '2. If session files are present, analyze them early in your investigation\n' +
+      '3. Follow a systematic approach based on the TSG or standard troubleshooting\n' +
+      '4. Document your findings clearly and suggest next steps';
     
     return prompt;
   }
@@ -223,6 +253,11 @@ export class AgentLoop {
     try {
       this.canceled = false;
       this.abortController = new AbortController();
+      
+      // Ensure system prompt is up to date before running
+      if (this.messages.length > 0 && this.messages[0].role === 'system') {
+        this.messages[0].content = this.buildSystemPrompt();
+      }
       
       // Add user message
       this.messages.push({
@@ -448,6 +483,14 @@ export class AgentLoop {
     this.canceled = true;
     if (this.abortController) {
       this.abortController.abort();
+    }
+  }
+  
+  updateTSG(tsgName: string | null): void {
+    this.params.activeTSG = tsgName;
+    // Update the system message to reflect the new TSG
+    if (this.messages.length > 0 && this.messages[0].role === 'system') {
+      this.messages[0].content = this.buildSystemPrompt();
     }
   }
   
